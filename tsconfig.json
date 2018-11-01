@@ -1,0 +1,18 @@
+{
+   "compilerOptions": {
+      "target": "es5",
+      "module": "commonjs",
+      "noResolve": false,
+      "noImplicitAny": true,
+      "removeComments": true,
+      "preserveConstEnums": true,
+      "sourceMap": true,
+      "experimentalDecorators": true,
+      "isolatedModules": false,
+      "lib": ["dom", "es2015.promise", "es5"],
+      "declaration": true,
+      "strict": true,
+      "outDir": "./dist/typings"
+   },
+   "files": ["./src/main.ts"]
+}
