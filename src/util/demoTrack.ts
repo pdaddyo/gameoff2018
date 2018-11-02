@@ -48,7 +48,7 @@ export default [
       length: 75,
    },
    {
-      type: TrackChunkType.RightCorner,
+      type: TrackChunkType.LeftCorner,
       height: 1,
       rotations: 1 / 2,
    },
