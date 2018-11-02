@@ -4,7 +4,7 @@ import demoTrack from './util/demoTrack'
 import { Axis } from 'babylonjs'
 
 export default class Track extends GameObject {
-   start() {
+   beforeStart() {
       const builder = new TrackBuilder(this.scene)
       this.mesh = builder.createTrack([
          ...demoTrack,
@@ -13,6 +13,6 @@ export default class Track extends GameObject {
          ...demoTrack,
       ])
 
-      this.mesh.rotate(Axis.Y, Math.PI / 3)
+      //    this.mesh.rotate(Axis.Y, Math.PI / 3.2)
    }
 }
