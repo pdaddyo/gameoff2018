@@ -23,7 +23,7 @@ export default class Game {
    private canvas: HTMLCanvasElement
    scene: Scene
    engine: Engine
-   camera: Camera
+   camera: FollowCamera
    light: Light
    player: Player
    track: Track
@@ -100,7 +100,7 @@ export default class Game {
       light.position = new Vector3(50, 30, -50)
       light.diffuse = new Color3(1, 0.97, 0.97)
       light.specular = Color3.FromHexString('#99a4cc')
-      light.intensity = 0.84
+      light.intensity = 0.94
 
       //   light.includedOnlyMeshes.push(this.playerMesh, this.ground)
       const shadowGenerator = new ShadowGenerator(512, light)
@@ -119,10 +119,10 @@ export default class Game {
          this.scene,
          this.player.mesh
       )
-      camera.radius = 70
-      camera.heightOffset = 70
-      camera.rotationOffset = -55
-      camera.cameraAcceleration = 0.003
+      camera.radius = 60
+      camera.heightOffset = 100
+      camera.rotationOffset = 100
+      camera.cameraAcceleration = 0.1
       camera.maxCameraSpeed = 7
 
       camera.lockedTarget = this.player.mesh!
@@ -147,8 +147,8 @@ export default class Game {
    }
 
    private setupCamera() {
-      return this.setupArcCamera()
-      // return this.setupFollowCamera()
+      //return this.setupArcCamera()
+      return this.setupFollowCamera()
    }
 
    private setupRenderPipeline() {
@@ -161,8 +161,8 @@ export default class Game {
 
       pipeline.fxaaEnabled = false
       pipeline.bloomEnabled = true
-      pipeline.bloomWeight = 0.15
-      pipeline.bloomScale = 0.3
+      pipeline.bloomWeight = 0.05
+      pipeline.bloomScale = 0.1
       pipeline.imageProcessingEnabled = true
       pipeline.imageProcessing.vignetteEnabled = true
       pipeline.imageProcessing.vignetteBlendMode =
