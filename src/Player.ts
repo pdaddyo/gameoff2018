@@ -12,18 +12,23 @@ import {
    Axis,
    FollowCamera,
 } from 'babylonjs'
+import { delay } from 'lodash'
 
 const down = Vector3.Down()
-const touchingDistance = 1
-const terminalVelocity = 2
-const gravity = new Vector3(0, -9.81, 0)
 
 export default class Player extends GameObject {
-   velocity: Vector3 = Vector3.Zero()
+   startPosition: Vector3 = Vector3.Zero()
    ray: Ray = new Ray(Vector3.Zero(), down)
    mass = 10
+   offsetFromGround = 1
    wasTouchingGroundLastFrame = false
-   transformNode: TransformNode = new TransformNode('playerTransformHelper')
+   cameraTarget = new Mesh('cameraTarget')
+   cameraTargetOffset = new Vector3(0, -20, 0)
+   startForceAngle = 0
+   forceAngle = 0
+   startSpeed = 2
+   speed = 0
+   maxSpeed = 10
 
    start() {
       this.mesh = MeshBuilder.CreateBox(
@@ -32,50 +37,62 @@ export default class Player extends GameObject {
          this.scene
       )
       this.mesh.setPositionWithLocalVector(new Vector3(0, 5, 2))
+      this.startPosition = this.mesh.position
+      const { arcCamera, followCamera } = this.game.camera
+      if (followCamera) {
+         followCamera.lockedTarget = this.cameraTarget
+      }
+      if (arcCamera) {
+         arcCamera.lockedTarget = this.cameraTarget
+      }
 
-      this.game.camera.lockedTarget = this.mesh!
-      //this.mesh.position.y = 5
-      //this.mesh.position.z = 2
+      this.reset()
+   }
+
+   reset() {
+      this.speed = this.startSpeed
+      this.forceAngle = this.startForceAngle
+      this.mesh!.position = Vector3.Zero()
+      this.game.isPlaying = true
+   }
+
+   beforeUpdate() {
+      this.cameraTarget.position = this.mesh!.position.add(
+         this.cameraTargetOffset
+      )
    }
 
    update() {
       const delta = this.game.engine.getDeltaTime()
       const { position } = this.mesh!
+
+      if (!this.game.isPlaying) {
+         return
+      }
+
       this.ray.origin = position
       this.ray.direction = down
       const result = this.ray.intersectsMesh(this.game.track.mesh!, false)
       if (result.hit) {
-         const distanceToFloor = result.distance
          const normal = result.getNormal(true, true)!
          const across = Vector3.Cross(normal, Vector3.Down())
          const downhill = Vector3.Cross(across, normal)
-         if (distanceToFloor <= touchingDistance) {
-            if (!this.wasTouchingGroundLastFrame) {
-               //   console.log('touched ground!')
-               this.wasTouchingGroundLastFrame = true
-               this.mesh!.lookAt(position.add(downhill))
-               position.y += distanceToFloor - touchingDistance
-               this.velocity = downhill.scale(delta / 12)
-            } else {
-               // continuing to touch ground
-            }
-         } else {
-            this.wasTouchingGroundLastFrame = false
+         if (!this.wasTouchingGroundLastFrame) {
+            this.wasTouchingGroundLastFrame = true
             this.mesh!.lookAt(position.add(downhill))
-            //  console.log('mid air!', this.velocity)
-            // mid air, just apply gravity
-            this.velocity.addInPlace(
-               gravity.scale((this.mass / 1000000) * delta)
-            )
          }
-
-         //
+         // glue to floor
+         position.y = result.pickedPoint!.y + this.offsetFromGround
       } else {
-         // no ground beneath us, round fail for now
          console.log('game over')
+         this.speed = 0
+         this.game.isPlaying = false
+         // no ground beneath us, round fail for now
+         delay(() => {
+            this.reset()
+         }, 500)
       }
-
-      // apply the velocity
-      this.mesh!.position.addInPlace(this.velocity)
+      position.x -= ((Math.sin(this.forceAngle) * this.speed) / 100) * delta
+      position.z += ((Math.cos(this.forceAngle) * this.speed) / 100) * delta
    }
 }
