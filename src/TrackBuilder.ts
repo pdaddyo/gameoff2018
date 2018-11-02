@@ -37,7 +37,7 @@ export type TrackChunk = TrackChunkStraight | TrackChunkCorner
 export default class TrackBuilder {
    private scene: Scene
    defaultCornerRadius = 22
-   defaultTrackWidth = 10
+   defaultTrackWidth = 12
    defaultDivisions = 20
    parallelPathCount = 5 // odd number recommended
    cornerOuterBias = 0.25
@@ -54,16 +54,18 @@ export default class TrackBuilder {
       const track = MeshBuilder.CreateRibbon('track', {
          pathArray: paths,
       })
+      track.material = this.createTrackMaterial()
+      return track
+   }
 
+   createTrackMaterial() {
       const material = new BABYLON.StandardMaterial('mat1', this.scene)
       material.alpha = 1.0
       material.diffuseColor = new BABYLON.Color3(0.95, 0.97, 1)
       material.wireframe = false
       material.twoSidedLighting = true
       material.backFaceCulling = false
-      track.material = material
-
-      return track
+      return material
    }
 
    createPaths(chunks: TrackChunk[]) {
@@ -148,9 +150,7 @@ export default class TrackBuilder {
             }
          }
       }
-      //   const lines = MeshBuilder.CreateLines('trackCenterLine', {
-      //      points: centerPath,
-      //   })
+
       return paths
    }
 }
