@@ -1,6 +1,7 @@
 import Game from './Game'
 import { FollowCamera, Vector3, ArcRotateCamera } from 'babylonjs'
 import * as BABYLON from 'babylonjs'
+import gui from './util/gui'
 
 export default class Camera {
    game: Game
@@ -26,11 +27,15 @@ export default class Camera {
          scene,
          player.mesh
       )
-      camera.radius = 30
-      camera.heightOffset = 80
-      camera.rotationOffset = -90
-      camera.cameraAcceleration = 0.1
+      camera.radius = 40
+      camera.heightOffset = 98
+      camera.rotationOffset = -20 //-90
+      camera.cameraAcceleration = 0.05
       camera.maxCameraSpeed = 7
+      var cameraGui = gui.addFolder('Camera')
+      cameraGui.add(camera, 'radius', 0, 50)
+      cameraGui.add(camera, 'heightOffset', 10, 220)
+      cameraGui.add(camera, 'rotationOffset', -180, 180)
 
       camera.attachControl(canvas, true)
 
