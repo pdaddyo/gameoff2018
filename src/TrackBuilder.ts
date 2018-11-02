@@ -7,6 +7,8 @@ import {
    Axis,
    PhysicsImpostor,
 } from 'babylonjs'
+import Track from './Track'
+import InteractablePost from './InteractablePost'
 
 export enum TrackChunkType {
    Straight,
@@ -36,13 +38,14 @@ export type TrackChunk = TrackChunkStraight | TrackChunkCorner
 
 export default class TrackBuilder {
    private scene: Scene
-   defaultCornerRadius = 22
+   defaultCornerRadius = 24
    defaultTrackWidth = 12
    defaultDivisions = 20
    parallelPathCount = 5 // odd number recommended
-   cornerOuterBias = 0.25
+   cornerOuterBias = 0 //0.25
    bowlHeight = 0
    cursor: TransformNode
+   track = new Track()
 
    constructor(scene: Scene) {
       this.scene = scene
@@ -51,11 +54,12 @@ export default class TrackBuilder {
 
    createTrack(chunks: TrackChunk[]) {
       const paths = this.createPaths(chunks)
-      const track = MeshBuilder.CreateRibbon('track', {
+      const trackMesh = MeshBuilder.CreateRibbon('track', {
          pathArray: paths,
       })
-      track.material = this.createTrackMaterial()
-      return track
+      trackMesh.material = this.createTrackMaterial()
+      this.track.mesh = trackMesh
+      return this.track
    }
 
    createTrackMaterial() {
@@ -71,6 +75,7 @@ export default class TrackBuilder {
    createPaths(chunks: TrackChunk[]) {
       const centerPath = [] as Vector3[]
       const paths = [] as Vector3[][]
+      let cornerIndex = 0
 
       // prepare the path arrays
       for (let pathIndex = 0; pathIndex < this.parallelPathCount; pathIndex++) {
@@ -80,10 +85,45 @@ export default class TrackBuilder {
       for (let trackChunk of chunks) {
          const divisions = trackChunk.divisions || this.defaultDivisions
          const trackWidth = trackChunk.width || this.defaultTrackWidth
+         const cornerMultiplier =
+            trackChunk.type == TrackChunkType.Straight
+               ? 0
+               : trackChunk.type === TrackChunkType.LeftCorner
+                  ? -1
+                  : 1
          const divisionLength =
             trackChunk.type === TrackChunkType.Straight
                ? trackChunk.length / divisions
-               : (trackChunk.radius || this.defaultCornerRadius) / divisions
+               : ((trackChunk.radius || this.defaultCornerRadius) / divisions) *
+                 1.6
+
+         if (
+            trackChunk.type === TrackChunkType.LeftCorner ||
+            trackChunk.type === TrackChunkType.RightCorner
+         ) {
+            const radius = trackChunk.radius || this.defaultCornerRadius
+            // place a post
+            const postTranslation = new Vector3(
+               (cornerMultiplier * radius) / 2,
+               0,
+               0
+            )
+            // translate cursor to post positoin
+            this.cursor.locallyTranslate(postTranslation)
+            const range = radius / 2 + trackWidth / 2
+            this.track.interactables.push(
+               new InteractablePost(
+                  ++cornerIndex,
+                  this.cursor.position,
+                  range,
+                  cornerMultiplier
+               )
+            )
+            // translate cursor back again
+            this.cursor.locallyTranslate(
+               postTranslation.multiplyInPlace(new Vector3(-1, -1, -1))
+            )
+         }
 
          for (
             let divisionIndex = 0;
@@ -91,12 +131,7 @@ export default class TrackBuilder {
             divisionIndex++
          ) {
             centerPath.push(this.cursor.position)
-            const cornerMultiplier =
-               trackChunk.type == TrackChunkType.Straight
-                  ? 0
-                  : trackChunk.type === TrackChunkType.LeftCorner
-                     ? -1
-                     : 1
+
             for (
                let pathIndex = 0;
                pathIndex < this.parallelPathCount;
@@ -104,7 +139,7 @@ export default class TrackBuilder {
             ) {
                // generate the parallel paths
                const translation = new Vector3(
-                  (trackWidth / this.parallelPathCount) * pathIndex -
+                  (trackWidth / (this.parallelPathCount - 1)) * pathIndex -
                      trackWidth / 2,
                   0,
                   0

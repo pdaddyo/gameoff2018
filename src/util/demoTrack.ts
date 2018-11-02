@@ -3,8 +3,8 @@ import { TrackChunkType, TrackChunk } from '../TrackBuilder'
 export default [
    {
       type: TrackChunkType.Straight,
-      height: 6,
-      length: 40,
+      height: 2,
+      length: 30,
    },
    {
       type: TrackChunkType.LeftCorner,
@@ -13,27 +13,27 @@ export default [
    },
    {
       type: TrackChunkType.Straight,
-      height: 3,
+      height: 2,
       length: 12,
    },
    {
       type: TrackChunkType.RightCorner,
-      height: 3,
+      height: 2,
       rotations: 1 / 2,
    },
    {
       type: TrackChunkType.Straight,
-      height: 3,
+      height: 2,
       length: 12,
    },
    {
       type: TrackChunkType.LeftCorner,
-      height: 5,
+      height: 2,
       rotations: 1 / 2,
    },
    {
       type: TrackChunkType.Straight,
-      height: 3,
+      height: 2,
       length: 12,
    },
    {
@@ -91,7 +91,6 @@ export default [
       type: TrackChunkType.RightCorner,
       height: 2,
       rotations: 1 / 3,
-      radius: 10,
    },
    {
       type: TrackChunkType.Straight,

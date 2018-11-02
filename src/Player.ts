@@ -26,7 +26,7 @@ export default class Player extends GameObject {
    cameraTargetOffset = new Vector3(0, 0, 0)
    startForceAngle = 0
    forceAngle = 0
-   startSpeed = 1.5
+   startSpeed = 2.5
    speed = 0
    maxSpeed = 10
 
@@ -53,14 +53,15 @@ export default class Player extends GameObject {
       this.speed = this.startSpeed
       this.forceAngle = this.startForceAngle
       this.mesh!.position = Vector3.Zero()
+      this.game.track.reset()
       this.game.isPlaying = true
    }
 
    beforeUpdate() {}
 
    update() {
-      const delta = this.game.engine.getDeltaTime()
-      const { position } = this.mesh!
+      const { deltaTime } = this.game
+      const { position } = this.mesh
 
       if (!this.game.isPlaying) {
          return
@@ -68,19 +69,21 @@ export default class Player extends GameObject {
 
       this.ray.origin = position
       this.ray.direction = down
-      const result = this.ray.intersectsMesh(this.game.track.mesh!, false)
+      const result = this.ray.intersectsMesh(this.game.track.mesh, false)
       if (result.hit) {
          const normal = result.getNormal(true, true)!
          const across = Vector3.Cross(normal, Vector3.Down())
          const downhill = Vector3.Cross(across, normal)
          if (!this.wasTouchingGroundLastFrame) {
             this.wasTouchingGroundLastFrame = true
-            this.mesh!.lookAt(position.add(downhill))
+            this.mesh.lookAt(position.add(downhill))
          }
          // move along x+z, pin y to floor
-         position.x -= (Math.sin(this.forceAngle) * this.speed * delta) / 100
+         position.x -=
+            (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
          position.y = result.pickedPoint!.y + this.offsetFromGround
-         position.z += (Math.cos(this.forceAngle) * this.speed * delta) / 100
+         position.z +=
+            (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
       } else {
          console.log('game over')
          this.speed = 0

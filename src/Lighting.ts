@@ -35,7 +35,7 @@ export default class Lighting {
 
       //   light.includedOnlyMeshes.push(this.playerMesh, this.ground)
       const shadowGenerator = new ShadowGenerator(512, light)
-      shadowGenerator.getShadowMap()!.renderList!.push(player.mesh!)
+      shadowGenerator.getShadowMap()!.renderList!.push(player.mesh)
       shadowGenerator.useBlurExponentialShadowMap = true
       shadowGenerator.blurBoxOffset = 4
       shadowGenerator.normalBias = 0.1

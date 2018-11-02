@@ -1,4 +1,4 @@
-import { Engine, Scene } from 'babylonjs'
+import { Engine, Scene, HighlightLayer, Mesh } from 'babylonjs'
 
 import Snow from './Snow'
 import Track from './Track'
@@ -7,9 +7,12 @@ import Player from './Player'
 import RenderPipeline from './RenderPipeline'
 import Lighting from './Lighting'
 import Camera from './Camera'
+import TrackBuilder from './TrackBuilder'
+import demoTrack from './util/demoTrack'
 
 export default class Game {
    static instance: Game
+   static emptyMesh: Mesh
    canvas: HTMLCanvasElement
    scene: Scene
    engine: Engine
@@ -22,19 +25,27 @@ export default class Game {
    pipeline: RenderPipeline
    snow: Snow
    isPlaying = true
+   highlight: HighlightLayer
+   deltaTime = 1
 
    constructor(canvas: HTMLCanvasElement) {
       Game.instance = this
       this.canvas = canvas
-      this.engine = new Engine(canvas, true)
+      this.engine = new Engine(canvas, true, { stencil: true })
       this.scene = this.setupScene()
+      Game.emptyMesh = new Mesh('empty')
+      this.highlight = new HighlightLayer('hl1', this.scene)
       this.setupDebug()
       this.setupResize()
       this.player = new Player()
       this.camera = new Camera(this)
       this.lighting = new Lighting(this)
       this.pipeline = new RenderPipeline(this)
-      this.track = new Track()
+      this.track = new TrackBuilder(this.scene).createTrack([
+         ...demoTrack,
+         ...demoTrack,
+         ...demoTrack,
+      ])
       this.snow = new Snow()
    }
 
@@ -60,6 +71,7 @@ export default class Game {
    }
 
    updateGameObjects() {
+      this.deltaTime = this.engine.getDeltaTime()
       for (let gameObject of this.gameObjects) {
          gameObject.beforeUpdate()
       }
