@@ -25,13 +25,13 @@ export default class Lighting {
 
       const light = new DirectionalLight(
          'light1',
-         new Vector3(-1, -1, 0),
+         new Vector3(-1, -1, 0.2),
          scene
       )
       light.shadowEnabled = true
       light.diffuse = new Color3(1, 0.97, 0.97)
       light.specular = Color3.FromHexString('#99a4cc')
-      light.intensity = 0.84
+      light.intensity = 0.34
 
       //   light.includedOnlyMeshes.push(this.playerMesh, this.ground)
       const shadowGenerator = new ShadowGenerator(512, light)
@@ -40,10 +40,5 @@ export default class Lighting {
       shadowGenerator.blurBoxOffset = 4
       shadowGenerator.normalBias = 0.1
       shadowGenerator.setDarkness(0.5)
-
-      scene.registerBeforeRender(() => {
-         // follow the player
-         light.position = game.player.mesh!.position.add(this.offset)
-      })
    }
 }
