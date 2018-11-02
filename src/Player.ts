@@ -23,10 +23,10 @@ export default class Player extends GameObject {
    offsetFromGround = 1
    wasTouchingGroundLastFrame = false
    cameraTarget = new Mesh('cameraTarget')
-   cameraTargetOffset = new Vector3(0, -20, 0)
+   cameraTargetOffset = new Vector3(0, 0, 0)
    startForceAngle = 0
    forceAngle = 0
-   startSpeed = 2
+   startSpeed = 1.5
    speed = 0
    maxSpeed = 10
 
@@ -36,7 +36,7 @@ export default class Player extends GameObject {
          { size: 4, width: 2, height: 2 },
          this.scene
       )
-      this.mesh.setPositionWithLocalVector(new Vector3(0, 5, 2))
+      this.mesh.setPositionWithLocalVector(new Vector3(0, 5, 0))
       this.startPosition = this.mesh.position
       const { arcCamera, followCamera } = this.game.camera
       if (followCamera) {
@@ -56,11 +56,7 @@ export default class Player extends GameObject {
       this.game.isPlaying = true
    }
 
-   beforeUpdate() {
-      this.cameraTarget.position = this.mesh!.position.add(
-         this.cameraTargetOffset
-      )
-   }
+   beforeUpdate() {}
 
    update() {
       const delta = this.game.engine.getDeltaTime()
@@ -81,8 +77,10 @@ export default class Player extends GameObject {
             this.wasTouchingGroundLastFrame = true
             this.mesh!.lookAt(position.add(downhill))
          }
-         // glue to floor
+         // move along x+z, pin y to floor
+         position.x -= (Math.sin(this.forceAngle) * this.speed * delta) / 100
          position.y = result.pickedPoint!.y + this.offsetFromGround
+         position.z += (Math.cos(this.forceAngle) * this.speed * delta) / 100
       } else {
          console.log('game over')
          this.speed = 0
@@ -92,7 +90,7 @@ export default class Player extends GameObject {
             this.reset()
          }, 500)
       }
-      position.x -= ((Math.sin(this.forceAngle) * this.speed) / 100) * delta
-      position.z += ((Math.cos(this.forceAngle) * this.speed) / 100) * delta
+      // update camera target
+      this.cameraTarget.position = position.add(this.cameraTargetOffset)
    }
 }
