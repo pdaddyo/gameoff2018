@@ -38,7 +38,7 @@ export default class TrackBuilder {
    private scene: Scene
    defaultCornerRadius = 22
    defaultTrackWidth = 10
-   defaultDivisions = 12
+   defaultDivisions = 20
    parallelPathCount = 5 // odd number recommended
    cornerOuterBias = 0.25
    bowlHeight = 0
