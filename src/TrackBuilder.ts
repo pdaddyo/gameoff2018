@@ -42,7 +42,7 @@ export default class TrackBuilder {
    defaultTrackWidth = 12
    defaultDivisions = 20
    parallelPathCount = 5 // odd number recommended
-   cornerOuterBias = 0 //0.25
+   cornerOuterBias = 0.45
    bowlHeight = 0
    cursor: TransformNode
    track = new Track()

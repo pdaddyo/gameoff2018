@@ -10,6 +10,7 @@ export default class Track extends GameObject {
       this.currentInteractableIndex = 0
       this.availableInteractable = null
       for (let interactable of this.interactables) {
+         interactable.disable()
          interactable.mesh.isVisible = true
       }
    }

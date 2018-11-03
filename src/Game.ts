@@ -58,7 +58,7 @@ export default class Game {
       const { player } = this
       player.speed = player.startSpeed
       player.forceAngle = player.startForceAngle
-      player.mesh.position = Vector3.Zero()
+      player.mesh.position = new Vector3(0, 3, 0)
       this.track.reset()
    }
 

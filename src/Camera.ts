@@ -27,9 +27,9 @@ export default class Camera {
          scene,
          player.mesh
       )
-      camera.radius = 40
-      camera.heightOffset = 98
-      camera.rotationOffset = -20 //-90
+      camera.radius = 50
+      camera.heightOffset = 48
+      camera.rotationOffset = -39 //-90
       camera.cameraAcceleration = 0.05
       camera.maxCameraSpeed = 7
       var cameraGui = gui.addFolder('Camera')

@@ -1,7 +1,6 @@
 import GameObject from './GameObject'
-import { MeshBuilder, Vector3, Ray, Mesh, Axis } from 'babylonjs'
+import { MeshBuilder, Vector3, Ray, Mesh, Color3, Color4 } from 'babylonjs'
 import { delay } from 'lodash'
-import Track from './Track'
 import InteractablePost from './InteractablePost'
 
 const down = Vector3.Down()
@@ -28,6 +27,18 @@ export default class Player extends GameObject {
    corneringDuration = 0
    corneringStartAngle = 0
    corneringPost: InteractablePost | null = null
+   corneringLine = MeshBuilder.CreateLines(
+      'corneringLine',
+      {
+         points: [Vector3.Zero(), Vector3.Zero()],
+         updatable: true,
+         colors: [
+            Color4.FromHexString('#99a4ccff'),
+            Color4.FromHexString('#99a4ccaa'),
+         ],
+      },
+      this.scene
+   )
 
    start() {
       this.mesh = MeshBuilder.CreateBox(
@@ -35,7 +46,7 @@ export default class Player extends GameObject {
          { size: 4, width: 2, height: 2 },
          this.scene
       )
-      this.mesh.setPositionWithLocalVector(new Vector3(0, 5, 0))
+      this.mesh.position = new Vector3(0, 3, 0)
       this.startPosition = this.mesh.position
       const { arcCamera, followCamera } = this.game.camera
       if (followCamera) {
@@ -44,6 +55,7 @@ export default class Player extends GameObject {
       if (arcCamera) {
          arcCamera.lockedTarget = this.cameraTarget
       }
+      this.corneringLine.isVisible = false
    }
 
    beforeUpdate() {}
@@ -80,8 +92,9 @@ export default class Player extends GameObject {
                   this.corneringStartAngle +
                   (this.corneringPost!.directionMultiplier *
                      this.corneringDuration *
+                     (12 / this.corneringRadius) *
                      (this.speed / 10)) /
-                     120
+                     124
                position.x =
                   this.corneringPost!.mesh.position.x +
                   Math.sin(angle) * this.corneringRadius
@@ -89,7 +102,18 @@ export default class Player extends GameObject {
                   this.corneringPost!.mesh.position.z +
                   Math.cos(angle) * this.corneringRadius
 
-               this.speed += 0.0001 * deltaTime
+               this.corneringLine = MeshBuilder.CreateLines('corneringLine', {
+                  points: [
+                     new Vector3(
+                        this.game.track.availableInteractable!.mesh.position.x,
+                        this.mesh.position.y,
+                        this.game.track.availableInteractable!.mesh.position.z
+                     ),
+                     this.mesh.position,
+                  ],
+                  instance: this.corneringLine,
+               })
+               this.speed += 0.0003 * deltaTime
                this.forceAngle =
                   angle +
                   (this.corneringPost!.directionMultiplier * Math.PI) / 2
@@ -124,6 +148,7 @@ export default class Player extends GameObject {
 
    startCornering() {
       this.mode = PlayerMode.Cornering
+      this.corneringLine.isVisible = true
       this.corneringPost = this.game.track
          .availableInteractable as InteractablePost
       this.corneringDuration = 0
@@ -146,12 +171,11 @@ export default class Player extends GameObject {
          playerPositionFlat.x - postPositionFlat.x,
          playerPositionFlat.z - postPositionFlat.z
       )
-      console.log('corneringRadius = ' + this.corneringRadius)
-      console.log('corneringStartAngle = ' + this.corneringStartAngle)
    }
 
    stopCornering() {
       this.mode = PlayerMode.Downhill
+      this.corneringLine.isVisible = false
       this.corneringPost = null
    }
 }
