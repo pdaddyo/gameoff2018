@@ -3,14 +3,16 @@ import { MeshBuilder, Vector3, Ray, Mesh, Color3, Color4 } from 'babylonjs'
 import { delay } from 'lodash'
 import InteractablePost from './InteractablePost'
 
-const down = Vector3.Down()
 enum PlayerMode {
    Downhill,
    Cornering,
 }
+
+const down = Vector3.Down()
+
 export default class Player extends GameObject {
    mode = PlayerMode.Downhill
-   startPosition: Vector3 = Vector3.Zero()
+   startPosition = new Vector3(0, 3, 0)
    ray: Ray = new Ray(Vector3.Zero(), down)
    mass = 10
    offsetFromGround = 1
@@ -46,8 +48,7 @@ export default class Player extends GameObject {
          { size: 4, width: 2, height: 2 },
          this.scene
       )
-      this.mesh.position = new Vector3(0, 3, 0)
-      this.startPosition = this.mesh.position
+      this.mesh.position = this.startPosition
       const { arcCamera, followCamera } = this.game.camera
       if (followCamera) {
          followCamera.lockedTarget = this.cameraTarget
@@ -58,13 +59,15 @@ export default class Player extends GameObject {
       this.corneringLine.isVisible = false
    }
 
-   beforeUpdate() {}
-
    update() {
       const { deltaTime } = this.game
       const { position } = this.mesh
 
       if (this.game.isPlaying) {
+         // check for cornering
+         this.checkCorneringStatus()
+
+         // check ground beneath us
          this.ray.origin = position
          this.ray.direction = down
          const result = this.ray.intersectsMesh(this.game.track.mesh, false)
@@ -76,8 +79,7 @@ export default class Player extends GameObject {
                this.wasTouchingGroundLastFrame = true
                this.mesh.lookAt(position.add(downhill))
             }
-            // pin y to floor
-            position.y = result.pickedPoint!.y + this.offsetFromGround
+
             if (this.mode === PlayerMode.Downhill) {
                position.x +=
                   (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
@@ -113,11 +115,13 @@ export default class Player extends GameObject {
                   ],
                   instance: this.corneringLine,
                })
-               this.speed += 0.0003 * deltaTime
+               this.speed += 0.0001 * deltaTime
                this.forceAngle =
                   angle +
                   (this.corneringPost!.directionMultiplier * Math.PI) / 2
             }
+            // pin y to floor
+            position.y = result.pickedPoint!.y + this.offsetFromGround
          } else {
             console.log('game over')
             this.speed = 0
@@ -131,8 +135,9 @@ export default class Player extends GameObject {
 
       // update camera target
       this.cameraTarget.position = position.add(this.cameraTargetOffset)
+   }
 
-      // check for cornering
+   checkCorneringStatus() {
       if (
          this.game.track.availableInteractable &&
          this.game.isPointerDown &&
@@ -140,8 +145,11 @@ export default class Player extends GameObject {
       ) {
          this.startCornering()
       }
-
-      if (this.mode === PlayerMode.Cornering && !this.game.isPointerDown) {
+      if (
+         this.mode === PlayerMode.Cornering &&
+         (!this.game.isPointerDown ||
+            this.game.track.availableInteractable === null)
+      ) {
          this.stopCornering()
       }
    }
