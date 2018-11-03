@@ -57,6 +57,7 @@ export default class TrackBuilder {
       const trackMesh = MeshBuilder.CreateRibbon('track', {
          pathArray: paths,
       })
+
       trackMesh.material = this.createTrackMaterial()
       this.track.mesh = trackMesh
       return this.track
@@ -64,7 +65,7 @@ export default class TrackBuilder {
 
    createTrackMaterial() {
       const material = new BABYLON.StandardMaterial('mat1', this.scene)
-      material.alpha = 1.0
+      material.alpha = 1
       material.diffuseColor = new BABYLON.Color3(0.95, 0.97, 1)
       material.wireframe = false
       material.twoSidedLighting = true
@@ -162,6 +163,7 @@ export default class TrackBuilder {
                      )
                   )
                )
+
                this.cursor.locallyTranslate(
                   translation.multiplyInPlace(new Vector3(-1, -1, -1))
                )
@@ -188,6 +190,7 @@ export default class TrackBuilder {
          }
       }
 
+      this.track.centrePath = centerPath
       return paths
    }
 }

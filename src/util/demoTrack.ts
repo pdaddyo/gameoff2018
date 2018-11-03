@@ -8,7 +8,7 @@ export default [
    },
    {
       type: TrackChunkType.LeftCorner,
-      height: 3,
+      height: 2,
       rotations: 1 / 2,
    },
    {
@@ -18,7 +18,7 @@ export default [
    },
    {
       type: TrackChunkType.RightCorner,
-      height: 3,
+      height: 2,
       rotations: 1 / 2,
    },
    {
@@ -33,7 +33,7 @@ export default [
    },
    {
       type: TrackChunkType.Straight,
-      height: 11,
+      height: 4,
       length: 42,
    },
    {
@@ -44,25 +44,23 @@ export default [
 
    {
       type: TrackChunkType.Straight,
-      height: 15,
-      length: 75,
+      height: 10,
+      length: 25,
    },
    {
       type: TrackChunkType.LeftCorner,
       height: 1,
       rotations: 1 / 2,
-      radius: 16,
    },
    {
       type: TrackChunkType.Straight,
-      height: 4,
-      length: 28,
+      height: 34,
+      length: 98,
    },
    {
       type: TrackChunkType.RightCorner,
       height: 1,
       rotations: 1 / 2,
-      radius: 14,
    },
    {
       type: TrackChunkType.Straight,
@@ -73,7 +71,6 @@ export default [
       type: TrackChunkType.LeftCorner,
       height: 2,
       rotations: 1 / 2,
-      radius: 14,
    },
    {
       type: TrackChunkType.Straight,

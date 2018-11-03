@@ -30,7 +30,7 @@ export default class Player extends GameObject {
    corneringDuration = 0
    corneringStartAngle = 0
    corneringPost: InteractablePost | null = null
-   corneringAcceleration = 1
+   corneringAcceleration = 0.02
    corneringLine = MeshBuilder.CreateLines(
       'corneringLine',
       {
@@ -43,6 +43,13 @@ export default class Player extends GameObject {
       },
       this.scene
    )
+   driftDeadZone = 0
+
+   reset() {
+      this.speed = this.startSpeed
+      this.forceAngle = this.startForceAngle
+      this.mesh.position = new Vector3(0, 3, 0)
+   }
 
    start() {
       this.mesh = MeshBuilder.CreateBox(
@@ -62,6 +69,8 @@ export default class Player extends GameObject {
       const playerDebugGui = gui.addFolder('Player')
       playerDebugGui.add(this, 'corneringAcceleration', 0, 10)
       playerDebugGui.add(this, 'startSpeed', 0, 10)
+      playerDebugGui.add(this, 'speed', 0, 10)
+      playerDebugGui.add(this, 'driftDeadZone', 0, 5)
    }
 
    update() {
@@ -86,10 +95,48 @@ export default class Player extends GameObject {
             }
 
             if (this.mode === PlayerMode.Downhill) {
+               // in downhill mode, see how far off the centre of the track and correct a bit
+               const nextCentrePoint = this.game.track.getNextCentrePointForTrackY(
+                  position.y
+               )
+
+               const xOffset = position.x - nextCentrePoint.x
+               const zOffset = position.z - nextCentrePoint.z
+               const driftAngle = Math.atan2(xOffset, zOffset)
+               const absDriftAngle = Math.abs(driftAngle)
+
+               const distanceToNextPoint = Vector3.DistanceSquared(
+                  position,
+                  nextCentrePoint
+               )
+               let adjustAngle = 0
+
+               if (absDriftAngle > this.driftDeadZone) {
+                  if (driftAngle > 0) {
+                     //    adjustAngle = (distanceToNextPoint / 20000) * deltaTime
+                  } else {
+                     //     adjustAngle = -(distanceToNextPoint / 20000) * deltaTime
+                  }
+
+                  this.forceAngle += adjustAngle / 20
+                  //  console.log(driftAngle)
+               } else {
+                  this.forceAngle = driftAngle
+               }
+
+               //               position.x += xOffset / 10
+               //              position.z += zOffset / 10
+
                position.x +=
-                  (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
+                  (Math.sin(this.forceAngle + adjustAngle) *
+                     this.speed *
+                     deltaTime) /
+                  100
                position.z +=
-                  (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
+                  (Math.cos(this.forceAngle + adjustAngle) *
+                     this.speed *
+                     deltaTime) /
+                  100
             }
 
             if (this.mode === PlayerMode.Cornering) {

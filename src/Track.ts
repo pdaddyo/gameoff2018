@@ -6,9 +6,11 @@ export default class Track extends GameObject {
    interactables = [] as Interactable[]
    currentInteractableIndex = 0
    availableInteractable: Interactable | null = null
-
+   centrePath = [] as Vector3[]
+   centrePathIndex = 0
    reset() {
       this.currentInteractableIndex = 0
+      this.centrePathIndex = 0
       this.availableInteractable = null
       for (let interactable of this.interactables) {
          interactable.disable()
@@ -23,6 +25,17 @@ export default class Track extends GameObject {
       currentInteractable.disable()
       this.currentInteractableIndex++
       this.availableInteractable = null
+   }
+
+   getNextCentrePointForTrackY(y: number) {
+      while (this.centrePath[this.centrePathIndex].y > y) {
+         this.centrePathIndex++
+         //end of the list?
+         if (this.centrePathIndex === this.centrePath.length) {
+            return Vector3.Zero()
+         }
+      }
+      return this.centrePath[this.centrePathIndex]
    }
 
    update() {
