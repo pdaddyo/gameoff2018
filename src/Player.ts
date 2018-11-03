@@ -2,6 +2,7 @@ import GameObject from './GameObject'
 import { MeshBuilder, Vector3, Ray, Mesh, Color3, Color4 } from 'babylonjs'
 import { delay } from 'lodash'
 import InteractablePost from './InteractablePost'
+import gui from './util/gui'
 
 enum PlayerMode {
    Downhill,
@@ -29,6 +30,7 @@ export default class Player extends GameObject {
    corneringDuration = 0
    corneringStartAngle = 0
    corneringPost: InteractablePost | null = null
+   corneringAcceleration = 1
    corneringLine = MeshBuilder.CreateLines(
       'corneringLine',
       {
@@ -57,6 +59,9 @@ export default class Player extends GameObject {
          arcCamera.lockedTarget = this.cameraTarget
       }
       this.corneringLine.isVisible = false
+      const playerDebugGui = gui.addFolder('Player')
+      playerDebugGui.add(this, 'corneringAcceleration', 0, 10)
+      playerDebugGui.add(this, 'startSpeed', 0, 10)
    }
 
    update() {
@@ -115,7 +120,7 @@ export default class Player extends GameObject {
                   ],
                   instance: this.corneringLine,
                })
-               this.speed += 0.0001 * deltaTime
+               this.speed += (this.corneringAcceleration * deltaTime) / 1000
                this.forceAngle =
                   angle +
                   (this.corneringPost!.directionMultiplier * Math.PI) / 2
