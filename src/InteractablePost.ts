@@ -16,30 +16,12 @@ export default class InteractablePost extends Interactable {
       this.directionMultiplier = directionMultiplier
       this.mesh = MeshBuilder.CreateCylinder(
          `post${postIndex}`,
-         { height: 8, diameterTop: 1, diameterBottom: 4 },
+         { height: 18, diameterTop: 0, diameterBottom: 4 },
          this.scene
       )
       this.mesh.position = position.add(new Vector3(0, this.height / 2, 0))
    }
 
    start() {}
-
-   update() {
-      if (this.enabled && this.game.isPointerDown) {
-         this.wasRotatingLastFrame = true
-         const angleDelta =
-            ((this.game.deltaTime * this.range * this.game.player.speed) /
-               20000) *
-            this.directionMultiplier
-
-         this.game.player.forceAngle -= angleDelta
-      } else {
-         if (this.wasRotatingLastFrame) {
-            this.disable()
-            this.mesh.isVisible = false
-            this.game.track.nextPost()
-            this.wasRotatingLastFrame = false
-         }
-      }
-   }
+   update() {}
 }

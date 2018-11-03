@@ -4,19 +4,23 @@ import { Vector3 } from 'babylonjs'
 export default class Track extends GameObject {
    interactables = [] as Interactable[]
    currentInteractableIndex = 0
-   isCurrentInteractableActive = false
+   availableInteractable: Interactable | null = null
 
    reset() {
       this.currentInteractableIndex = 0
-      this.isCurrentInteractableActive = false
-   }
-
-   nextPost() {
-      this.currentInteractableIndex++
-      this.isCurrentInteractableActive = false
+      this.availableInteractable = null
       for (let interactable of this.interactables) {
          interactable.mesh.isVisible = true
       }
+   }
+
+   nextInteractable() {
+      const currentInteractable = this.interactables[
+         this.currentInteractableIndex
+      ]
+      currentInteractable.disable()
+      this.currentInteractableIndex++
+      this.availableInteractable = null
    }
 
    update() {
@@ -36,16 +40,15 @@ export default class Track extends GameObject {
             )
          ) <= currentInteractable.rangeSquared
 
-      if (!this.isCurrentInteractableActive) {
+      if (!this.availableInteractable) {
          if (isInRange) {
-            this.isCurrentInteractableActive = true
+            this.availableInteractable = currentInteractable
             currentInteractable.enable()
          }
       } else {
          // currently active
          if (!isInRange) {
-            this.isCurrentInteractableActive = false
-            currentInteractable.disable()
+            this.nextInteractable()
          }
       }
    }
