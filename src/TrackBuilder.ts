@@ -38,7 +38,7 @@ export type TrackChunk = TrackChunkStraight | TrackChunkCorner
 
 export default class TrackBuilder {
    private scene: Scene
-   defaultCornerRadius = 24
+   defaultCornerRadius = 20
    defaultTrackWidth = 12
    defaultDivisions = 20
    parallelPathCount = 5 // odd number recommended
@@ -105,9 +105,10 @@ export default class TrackBuilder {
             // place a post
             const postTranslation = new Vector3(
                (cornerMultiplier * radius) / 2,
-               0,
+               -trackChunk.height,
                0
             )
+            const cornerStartY = this.cursor.position.y + 0.2
             // translate cursor to post positoin
             this.cursor.locallyTranslate(postTranslation)
             const range = radius / 2 + trackWidth / 2
@@ -116,6 +117,7 @@ export default class TrackBuilder {
                   ++cornerIndex,
                   this.cursor.position,
                   range,
+                  cornerStartY,
                   cornerMultiplier
                )
             )
