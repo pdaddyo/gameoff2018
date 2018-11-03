@@ -1,4 +1,4 @@
-import { Engine, Scene, HighlightLayer, Mesh } from 'babylonjs'
+import { Engine, Scene, HighlightLayer, Mesh, Vector3 } from 'babylonjs'
 
 import Snow from './Snow'
 import Track from './Track'
@@ -24,7 +24,7 @@ export default class Game {
    gameObjects = [] as GameObject[]
    pipeline: RenderPipeline
    snow: Snow
-   isPlaying = true
+   isPlaying = false
    highlight: HighlightLayer
    deltaTime = 1
 
@@ -52,6 +52,14 @@ export default class Game {
    start() {
       this.startGameObjects()
       this.setupRenderLoop()
+   }
+
+   reset() {
+      const { player } = this
+      player.speed = player.startSpeed
+      player.forceAngle = player.startForceAngle
+      player.mesh.position = Vector3.Zero()
+      this.track.reset()
    }
 
    startGameObjects() {
@@ -85,6 +93,10 @@ export default class Game {
       scene.onPointerDown = evt => {
          evt.preventDefault()
          this.isPointerDown = true
+         if (!this.isPlaying) {
+            this.reset()
+            this.isPlaying = true
+         }
       }
       scene.onPointerUp = evt => {
          evt.preventDefault()
