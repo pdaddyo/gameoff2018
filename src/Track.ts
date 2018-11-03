@@ -1,6 +1,7 @@
 import GameObject from './GameObject'
 import Interactable from './Interactable'
 import { Vector3 } from 'babylonjs'
+import InteractablePost from './InteractablePost'
 export default class Track extends GameObject {
    interactables = [] as Interactable[]
    currentInteractableIndex = 0
@@ -28,7 +29,7 @@ export default class Track extends GameObject {
       const { player } = this.game
       const currentInteractable = this.interactables[
          this.currentInteractableIndex
-      ]
+      ] as InteractablePost
       // distance check using squares for performance
       // and ignoring the y to keep things arcady and simple
       const isInRange =
@@ -42,7 +43,11 @@ export default class Track extends GameObject {
          ) <= currentInteractable.rangeSquared
 
       if (!this.availableInteractable) {
-         if (isInRange) {
+         if (
+            isInRange &&
+            player.mesh.position.y - player.offsetFromGround <=
+               currentInteractable.cornerStartY
+         ) {
             this.availableInteractable = currentInteractable
             currentInteractable.enable()
          }
