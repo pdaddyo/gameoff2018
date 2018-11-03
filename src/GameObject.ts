@@ -1,7 +1,7 @@
 import { Scene, AbstractMesh, Mesh, MeshBuilder } from 'babylonjs'
 import Game from './Game'
 
-const HIGHLIGHT_COLOR = BABYLON.Color3.Red()
+const HIGHLIGHT_COLOR = BABYLON.Color3.Yellow()
 
 export default class GameObject {
    scene: Scene
@@ -18,11 +18,11 @@ export default class GameObject {
    }
 
    enableHighlight() {
-      // this.game.highlight.addMesh(this.mesh, HIGHLIGHT_COLOR)
+      this.game.highlight.addMesh(this.mesh, HIGHLIGHT_COLOR)
    }
 
    disableHighlight() {
-      // this.game.highlight.removeMesh(this.mesh)
+      this.game.highlight.removeMesh(this.mesh)
    }
 
    beforeStart() {}
