@@ -7,6 +7,7 @@ import {
    ShadowGenerator,
    Color4,
 } from 'babylonjs'
+import gui from './util/gui'
 
 export default class Lighting {
    offset: Vector3 = new Vector3(20, 20, 0)
@@ -40,5 +41,9 @@ export default class Lighting {
       shadowGenerator.blurBoxOffset = 4
       shadowGenerator.normalBias = 0.1
       shadowGenerator.setDarkness(0.5)
+
+      const lightGui = gui.addFolder('Lighting')
+      lightGui.add(hemi, 'intensity', 0, 10)
+      lightGui.add(light, 'intensity', 0, 10)
    }
 }

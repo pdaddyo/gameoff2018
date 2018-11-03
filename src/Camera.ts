@@ -32,7 +32,7 @@ export default class Camera {
       camera.rotationOffset = -39 //-90
       camera.cameraAcceleration = 0.05
       camera.maxCameraSpeed = 7
-      var cameraGui = gui.addFolder('Camera')
+      const cameraGui = gui.addFolder('Camera')
       cameraGui.add(camera, 'radius', 0, 150)
       cameraGui.add(camera, 'heightOffset', 10, 220)
       cameraGui.add(camera, 'rotationOffset', -180, 180)
