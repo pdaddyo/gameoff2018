@@ -80,14 +80,16 @@ export default class Player extends GameObject {
                   this.corneringStartAngle +
                   (this.corneringPost!.directionMultiplier *
                      this.corneringDuration *
-                     this.speed) /
-                     1500
+                     (this.speed / 10)) /
+                     120
                position.x =
                   this.corneringPost!.mesh.position.x +
                   Math.sin(angle) * this.corneringRadius
                position.z =
                   this.corneringPost!.mesh.position.z +
                   Math.cos(angle) * this.corneringRadius
+
+               this.speed += 0.0001 * deltaTime
                this.forceAngle =
                   angle +
                   (this.corneringPost!.directionMultiplier * Math.PI) / 2
