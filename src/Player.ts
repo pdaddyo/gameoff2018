@@ -15,7 +15,6 @@ export default class Player extends GameObject {
    mode = PlayerMode.Downhill
    startPosition = new Vector3(0, 3, 0)
    ray: Ray = new Ray(Vector3.Zero(), down)
-   mass = 10
    offsetFromGround = 1
    wasTouchingGroundLastFrame = false
    cameraTarget = new Mesh('cameraTarget')
@@ -66,12 +65,50 @@ export default class Player extends GameObject {
          arcCamera.lockedTarget = this.cameraTarget
       }
       this.corneringLine.isVisible = false
+      this.setupDebugGui()
+   }
+
+   private setupDebugGui() {
       const playerDebugGui = gui.addFolder('Player')
       playerDebugGui.add(this, 'corneringAcceleration', 0, 10)
       playerDebugGui.add(this, 'startSpeed', 0, 10)
       playerDebugGui.add(this, 'speed', 0, 10)
       playerDebugGui.add(this, 'driftDeadZone', 0, 5)
    }
+
+   private lookTowardsDeltaTime = 0
+   private lookTowardsCurrent = Vector3.Zero()
+   private lookTowardsTarget: Vector3 | null = null
+   lookTowardsSpeed = 150
+
+   lookTowards(current: Vector3, target: Vector3) {
+      this.lookTowardsDeltaTime = 0
+      this.lookTowardsCurrent = current
+      this.lookTowardsTarget = target
+   }
+
+   updateLookTowards() {
+      if (this.lookTowardsTarget) {
+         this.lookTowardsDeltaTime += this.game.deltaTime
+         if (this.lookTowardsDeltaTime > this.lookTowardsSpeed) {
+            this.lookTowardsCurrent = this.lookTowardsTarget
+            this.mesh.lookAt(this.mesh.position.add(this.lookTowardsTarget))
+            this.lookTowardsTarget = null
+            return
+         }
+         this.mesh.lookAt(
+            this.mesh.position.add(
+               Vector3.Lerp(
+                  this.lookTowardsCurrent,
+                  this.lookTowardsTarget,
+                  this.lookTowardsDeltaTime / this.lookTowardsSpeed
+               )
+            )
+         )
+      }
+   }
+
+   private lastDownhillVector?: Vector3
 
    update() {
       const { deltaTime } = this.game
@@ -88,12 +125,24 @@ export default class Player extends GameObject {
          if (result.hit) {
             const normal = result.getNormal(true, true)!
             const across = Vector3.Cross(normal, Vector3.Down())
-            const downhill = Vector3.Cross(across, normal)
-            if (!this.wasTouchingGroundLastFrame) {
-               this.wasTouchingGroundLastFrame = true
-               this.mesh.lookAt(position.add(downhill))
+            const downhillVector = Vector3.Cross(across, normal)
+
+            if (!this.lastDownhillVector) {
+               this.lastDownhillVector = downhillVector
+               this.lookTowards(this.lastDownhillVector, downhillVector)
             }
 
+            // has the downward vector changed enough?
+            if (
+               this.lastDownhillVector &&
+               !this.lastDownhillVector.equalsWithEpsilon(downhillVector, 0.01)
+            ) {
+               this.lookTowards(this.lastDownhillVector, downhillVector)
+               this.lastDownhillVector = downhillVector
+            }
+            this.updateLookTowards()
+
+            // this.mesh.lookAt(downhillVector)
             if (this.mode === PlayerMode.Downhill) {
                // in downhill mode, see how far off the centre of the track and correct a bit
                const nextCentrePoint = this.game.track.getNextCentrePointForTrackY(
@@ -128,15 +177,9 @@ export default class Player extends GameObject {
                //              position.z += zOffset / 10
 
                position.x +=
-                  (Math.sin(this.forceAngle + adjustAngle) *
-                     this.speed *
-                     deltaTime) /
-                  100
+                  (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
                position.z +=
-                  (Math.cos(this.forceAngle + adjustAngle) *
-                     this.speed *
-                     deltaTime) /
-                  100
+                  (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
             }
 
             if (this.mode === PlayerMode.Cornering) {
