@@ -1,6 +1,9 @@
 import { ParticleSystem, Texture, Vector3, Mesh } from 'babylonjs'
 import GameObject from './GameObject'
 
+const snowflake = require('./images/snowflake.png')
+
+console.log(snowflake)
 export default class Snow extends GameObject {
    particleSystem?: ParticleSystem
 
@@ -17,10 +20,7 @@ export default class Snow extends GameObject {
       this.mesh.isVisible = false
 
       const { particleSystem } = this
-      particleSystem.particleTexture = new Texture(
-         '/dist/snowflake.png',
-         this.scene
-      )
+      particleSystem.particleTexture = new Texture(snowflake, this.scene)
 
       particleSystem.startSpriteCellID = 0
       particleSystem.endSpriteCellID = 1

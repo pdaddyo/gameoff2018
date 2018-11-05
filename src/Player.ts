@@ -23,6 +23,7 @@ export default class Player extends GameObject {
    cameraTargetOffset = new Vector3(0, 0, 0)
    startForceAngle = 0
    forceAngle = 0
+   targetForceAngle = 0
    startSpeed = 2.5
    speed = 0
    maxSpeed = 10
@@ -36,7 +37,7 @@ export default class Player extends GameObject {
 
    reset() {
       this.speed = this.startSpeed
-      this.forceAngle = this.startForceAngle
+      this.targetForceAngle = this.forceAngle = this.startForceAngle
       this.mesh.position = new Vector3(0, 3, 0)
       this.mesh.rotation.set(0, 0, 0)
    }
@@ -154,7 +155,7 @@ export default class Player extends GameObject {
                   nextCentrePoint
                )
                let adjustAngle = 0
-
+               /*
                if (absDriftAngle > this.driftDeadZone) {
                   if (driftAngle > 0) {
                      //    adjustAngle = (distanceToNextPoint / 20000) * deltaTime
@@ -166,7 +167,7 @@ export default class Player extends GameObject {
                   //  console.log(driftAngle)
                } else {
                   this.forceAngle = driftAngle
-               }
+               }*/
 
                //               position.x += xOffset / 10
                //              position.z += zOffset / 10
@@ -194,9 +195,10 @@ export default class Player extends GameObject {
                   Math.cos(angle) * this.corneringRadius
 
                this.speed += (this.corneringAcceleration * deltaTime) / 1000
-               this.forceAngle =
+               this.targetForceAngle =
                   angle +
                   (this.corneringPost!.directionMultiplier * Math.PI) / 2
+
                this.mesh.rotation.y = this.forceAngle
                this.grapplingLine.updateCornering(this.mesh.position.y, angle)
             }
