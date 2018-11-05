@@ -44,7 +44,6 @@ export default class Game {
       this.track = new TrackBuilder(this.scene).createTrack([
          ...demoTrack,
          ...demoTrack,
-         ...demoTrack,
       ])
       this.snow = new Snow()
    }

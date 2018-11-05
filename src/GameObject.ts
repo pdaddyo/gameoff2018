@@ -18,11 +18,11 @@ export default class GameObject {
    }
 
    enableHighlight() {
-      this.game.highlight.addMesh(this.mesh, HIGHLIGHT_COLOR)
+      //     this.game.highlight.addMesh(this.mesh, HIGHLIGHT_COLOR)
    }
 
    disableHighlight() {
-      this.game.highlight.removeMesh(this.mesh)
+      //     this.game.highlight.removeMesh(this.mesh)
    }
 
    beforeStart() {}
