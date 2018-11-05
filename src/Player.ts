@@ -140,38 +140,7 @@ export default class Player extends GameObject {
             position.y = result.pickedPoint!.y + this.offsetFromGround
 
             if (this.mode === PlayerMode.Downhill) {
-               // in downhill mode, see how far off the centre of the track and correct a bit
-               const nextCentrePoint = this.game.track.getNextCentrePointForTrackY(
-                  position.y
-               )
-
-               const xOffset = position.x - nextCentrePoint.x
-               const zOffset = position.z - nextCentrePoint.z
-               const driftAngle = Math.atan2(xOffset, zOffset)
-               const absDriftAngle = Math.abs(driftAngle)
-
-               const distanceToNextPoint = Vector3.DistanceSquared(
-                  position,
-                  nextCentrePoint
-               )
-               let adjustAngle = 0
-               /*
-               if (absDriftAngle > this.driftDeadZone) {
-                  if (driftAngle > 0) {
-                     //    adjustAngle = (distanceToNextPoint / 20000) * deltaTime
-                  } else {
-                     //     adjustAngle = -(distanceToNextPoint / 20000) * deltaTime
-                  }
-
-                  this.forceAngle += adjustAngle / 20
-                  //  console.log(driftAngle)
-               } else {
-                  this.forceAngle = driftAngle
-               }*/
-
-               //               position.x += xOffset / 10
-               //              position.z += zOffset / 10
-
+               this.targetForceAngle = trackAngle
                position.x +=
                   (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
                position.z +=
@@ -195,13 +164,28 @@ export default class Player extends GameObject {
                   Math.cos(angle) * this.corneringRadius
 
                this.speed += (this.corneringAcceleration * deltaTime) / 1000
+
                this.targetForceAngle =
                   angle +
                   (this.corneringPost!.directionMultiplier * Math.PI) / 2
+               while (this.targetForceAngle > Math.PI) {
+                  this.targetForceAngle -= Math.PI * 2
+               }
 
-               this.mesh.rotation.y = this.forceAngle
+               while (this.targetForceAngle < -Math.PI) {
+                  this.targetForceAngle += Math.PI * 2
+               }
+
                this.grapplingLine.updateCornering(this.mesh.position.y, angle)
             }
+
+            // head towards target angle
+            const angleDelta = this.targetForceAngle - this.forceAngle
+            this.forceAngle +=
+               (angleDelta * deltaTime) /
+               (this.mode === PlayerMode.Downhill ? 620 : 300)
+
+            this.mesh.rotation.y = this.forceAngle
          } else {
             console.log('game over')
             this.speed = 0
