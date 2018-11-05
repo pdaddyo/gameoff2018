@@ -3,6 +3,7 @@ import { MeshBuilder, Vector3, Ray, Mesh, Color3, Color4 } from 'babylonjs'
 import { delay } from 'lodash'
 import InteractablePost from './InteractablePost'
 import gui from './util/gui'
+import GrapplingLine from './GrapplingLine'
 
 enum PlayerMode {
    Downhill,
@@ -14,6 +15,7 @@ const down = Vector3.Down()
 export default class Player extends GameObject {
    mode = PlayerMode.Downhill
    startPosition = new Vector3(0, 3, 0)
+   grapplingLine = new GrapplingLine()
    ray: Ray = new Ray(Vector3.Zero(), down)
    offsetFromGround = 1
    wasTouchingGroundLastFrame = false
@@ -30,24 +32,13 @@ export default class Player extends GameObject {
    corneringStartAngle = 0
    corneringPost: InteractablePost | null = null
    corneringAcceleration = 0.02
-   corneringLine = MeshBuilder.CreateLines(
-      'corneringLine',
-      {
-         points: [Vector3.Zero(), Vector3.Zero()],
-         updatable: true,
-         colors: [
-            Color4.FromHexString('#99a4ccff'),
-            Color4.FromHexString('#99a4ccaa'),
-         ],
-      },
-      this.scene
-   )
    driftDeadZone = 0
 
    reset() {
       this.speed = this.startSpeed
       this.forceAngle = this.startForceAngle
       this.mesh.position = new Vector3(0, 3, 0)
+      this.mesh.rotation.set(0, 0, 0)
    }
 
    start() {
@@ -64,7 +55,6 @@ export default class Player extends GameObject {
       if (arcCamera) {
          arcCamera.lockedTarget = this.cameraTarget
       }
-      this.corneringLine.isVisible = false
       this.setupDebugGui()
    }
 
@@ -74,6 +64,9 @@ export default class Player extends GameObject {
       playerDebugGui.add(this, 'startSpeed', 0, 10)
       playerDebugGui.add(this, 'speed', 0, 10)
       playerDebugGui.add(this, 'driftDeadZone', 0, 5)
+      playerDebugGui.add(this.mesh.rotation, 'x', -8, 8)
+      playerDebugGui.add(this.mesh.rotation, 'y', -8, 8)
+      playerDebugGui.add(this.mesh.rotation, 'z', -8, 8)
    }
 
    private lookTowardsDeltaTime = 0
@@ -126,10 +119,11 @@ export default class Player extends GameObject {
             const normal = result.getNormal(true, true)!
             const across = Vector3.Cross(normal, Vector3.Down())
             const downhillVector = Vector3.Cross(across, normal)
+            const trackAngle = Math.atan2(downhillVector.x, downhillVector.z)
 
             if (!this.lastDownhillVector) {
                this.lastDownhillVector = downhillVector
-               this.lookTowards(this.lastDownhillVector, downhillVector)
+               //      this.lookTowards(this.lastDownhillVector, downhillVector)
             }
 
             // has the downward vector changed enough?
@@ -137,12 +131,13 @@ export default class Player extends GameObject {
                this.lastDownhillVector &&
                !this.lastDownhillVector.equalsWithEpsilon(downhillVector, 0.01)
             ) {
-               this.lookTowards(this.lastDownhillVector, downhillVector)
+               //      this.lookTowards(this.lastDownhillVector, downhillVector)
                this.lastDownhillVector = downhillVector
             }
             this.updateLookTowards()
+            // pin y to floor
+            position.y = result.pickedPoint!.y + this.offsetFromGround
 
-            // this.mesh.lookAt(downhillVector)
             if (this.mode === PlayerMode.Downhill) {
                // in downhill mode, see how far off the centre of the track and correct a bit
                const nextCentrePoint = this.game.track.getNextCentrePointForTrackY(
@@ -184,7 +179,6 @@ export default class Player extends GameObject {
 
             if (this.mode === PlayerMode.Cornering) {
                this.corneringDuration += this.game.deltaTime
-
                const angle =
                   this.corneringStartAngle +
                   (this.corneringPost!.directionMultiplier *
@@ -199,24 +193,13 @@ export default class Player extends GameObject {
                   this.corneringPost!.mesh.position.z +
                   Math.cos(angle) * this.corneringRadius
 
-               this.corneringLine = MeshBuilder.CreateLines('corneringLine', {
-                  points: [
-                     new Vector3(
-                        this.game.track.availableInteractable!.mesh.position.x,
-                        this.mesh.position.y,
-                        this.game.track.availableInteractable!.mesh.position.z
-                     ),
-                     this.mesh.position,
-                  ],
-                  instance: this.corneringLine,
-               })
                this.speed += (this.corneringAcceleration * deltaTime) / 1000
                this.forceAngle =
                   angle +
                   (this.corneringPost!.directionMultiplier * Math.PI) / 2
+               this.mesh.rotation.y = this.forceAngle
+               this.grapplingLine.updateCornering(this.mesh.position.y, angle)
             }
-            // pin y to floor
-            position.y = result.pickedPoint!.y + this.offsetFromGround
          } else {
             console.log('game over')
             this.speed = 0
@@ -251,7 +234,6 @@ export default class Player extends GameObject {
 
    startCornering() {
       this.mode = PlayerMode.Cornering
-      this.corneringLine.isVisible = true
       this.corneringPost = this.game.track
          .availableInteractable as InteractablePost
       this.corneringDuration = 0
@@ -274,11 +256,17 @@ export default class Player extends GameObject {
          playerPositionFlat.x - postPositionFlat.x,
          playerPositionFlat.z - postPositionFlat.z
       )
+
+      this.grapplingLine.startCornering(
+         this.corneringPost,
+         this.corneringStartAngle,
+         this.corneringRadius
+      )
    }
 
    stopCornering() {
       this.mode = PlayerMode.Downhill
-      this.corneringLine.isVisible = false
+      this.grapplingLine.stopCornering()
       this.corneringPost = null
    }
 }
