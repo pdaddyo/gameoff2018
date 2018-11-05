@@ -9,7 +9,7 @@ export default [
    {
       type: TrackChunkType.LeftCorner,
       height: 2,
-      rotations: 1 / 4,
+      rotations: 1 / 3,
    },
    {
       type: TrackChunkType.Straight,
@@ -19,7 +19,7 @@ export default [
    {
       type: TrackChunkType.RightCorner,
       height: 2,
-      rotations: 1 / 4,
+      rotations: 1 / 2,
    },
    {
       type: TrackChunkType.Straight,
