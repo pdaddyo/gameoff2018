@@ -1,5 +1,5 @@
 import GameObject from './GameObject'
-import { Vector3, Ray, Mesh, SceneLoader, AbstractMesh } from 'babylonjs'
+import { Vector3, Ray, Mesh, SceneLoader, AbstractMesh, Axis } from 'babylonjs'
 import { delay } from 'lodash'
 import InteractablePost from './InteractablePost'
 import gui from './util/gui'
@@ -17,14 +17,14 @@ export default class Player extends GameObject {
    startPosition = new Vector3(0, 3, 0)
    grapplingLine = new GrapplingLine()
    ray: Ray = new Ray(Vector3.Zero(), down)
-   offsetFromGround = 1.1
+   offsetFromGround = 1
    wasTouchingGroundLastFrame = false
    cameraTarget = new Mesh('cameraTarget')
    cameraTargetOffset = new Vector3(0, 0, 0)
    startForceAngle = 0
    forceAngle = 0
    targetForceAngle = 0
-   startSpeed = 2.5
+   startSpeed = 2.6
    speed = 0
    maxSpeed = 10
    isCornering = false
@@ -34,6 +34,7 @@ export default class Player extends GameObject {
    corneringPost: InteractablePost | null = null
    corneringAcceleration = 0.02
    driftDeadZone = 0
+   trackAngle = 0
 
    reset() {
       this.speed = this.startSpeed
@@ -63,14 +64,16 @@ export default class Player extends GameObject {
             this.mesh = new AbstractMesh('penguinParts') as Mesh
             let index = 0
             for (let mesh of newMeshes) {
-               if (index++ > 4) continue
-               mesh.parent = this.mesh
-               mesh.material = material
-               // mesh.rotate(Axis.Y, Math.PI)
+               if (index++ > 4) {
+                  mesh.isVisible = false
+               } else {
+                  mesh.parent = this.mesh
+                  mesh.material = material
+               }
             }
 
             this.mesh.scaling = new Vector3(1.5, 1.5, 1.5)
-
+            this.mesh.setPivotPoint(new Vector3(0, 1, -1))
             // Set the target of the camera to the first imported mesh
             //this.mesh = newMeshes[3]
          }
@@ -152,7 +155,7 @@ export default class Player extends GameObject {
             const normal = result.getNormal(true, true)!
             const across = Vector3.Cross(normal, Vector3.Down())
             const downhillVector = Vector3.Cross(across, normal)
-            const trackAngle = Math.atan2(downhillVector.x, downhillVector.z)
+            this.trackAngle = Math.atan2(downhillVector.x, downhillVector.z)
 
             if (!this.lastDownhillVector) {
                this.lastDownhillVector = downhillVector
@@ -172,7 +175,6 @@ export default class Player extends GameObject {
             position.y = result.pickedPoint!.y + this.offsetFromGround
 
             if (this.mode === PlayerMode.Downhill) {
-               this.targetForceAngle = trackAngle
                position.x +=
                   (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
                position.z +=
@@ -217,7 +219,7 @@ export default class Player extends GameObject {
                (angleDelta * deltaTime) /
                (this.mode === PlayerMode.Downhill ? 600 : 320)
 
-            this.mesh.rotation.y = this.forceAngle
+            this.mesh.rotation.y = this.forceAngle - Math.PI
          } else {
             console.log('game over')
             this.speed = 0
@@ -286,5 +288,8 @@ export default class Player extends GameObject {
       this.mode = PlayerMode.Downhill
       this.grapplingLine.stopCornering()
       this.corneringPost = null
+      delay(() => {
+         this.targetForceAngle = this.trackAngle
+      }, 350)
    }
 }
