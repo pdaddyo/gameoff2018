@@ -126,7 +126,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 5,
-      length: 8,
+      length: 68,
    },
    {
       type: TrackChunkType.LeftCorner,

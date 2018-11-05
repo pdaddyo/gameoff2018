@@ -183,7 +183,7 @@ export default class Player extends GameObject {
             const angleDelta = this.targetForceAngle - this.forceAngle
             this.forceAngle +=
                (angleDelta * deltaTime) /
-               (this.mode === PlayerMode.Downhill ? 620 : 300)
+               (this.mode === PlayerMode.Downhill ? 650 : 300)
 
             this.mesh.rotation.y = this.forceAngle
          } else {
