@@ -1,5 +1,5 @@
 import GameObject from './GameObject'
-import { MeshBuilder, Vector3, Ray, Mesh, Color3, Color4 } from 'babylonjs'
+import { Vector3, Ray, Mesh, SceneLoader, AbstractMesh } from 'babylonjs'
 import { delay } from 'lodash'
 import InteractablePost from './InteractablePost'
 import gui from './util/gui'
@@ -17,7 +17,7 @@ export default class Player extends GameObject {
    startPosition = new Vector3(0, 3, 0)
    grapplingLine = new GrapplingLine()
    ray: Ray = new Ray(Vector3.Zero(), down)
-   offsetFromGround = 1
+   offsetFromGround = 1.1
    wasTouchingGroundLastFrame = false
    cameraTarget = new Mesh('cameraTarget')
    cameraTargetOffset = new Vector3(0, 0, 0)
@@ -42,12 +42,44 @@ export default class Player extends GameObject {
       this.mesh.rotation.set(0, 0, 0)
    }
 
+   createMaterial() {
+      const material = new BABYLON.StandardMaterial(
+         'playerMaterial',
+         this.scene
+      )
+      material.diffuseColor = new BABYLON.Color3(0.2, 0.7, 0.99)
+      material.backFaceCulling = false
+      return material
+   }
+
    start() {
-      this.mesh = MeshBuilder.CreateBox(
+      SceneLoader.ImportMesh(
+         '',
+         'dist/',
+         require('../art/blender/penguin.babylon').replace(/\/dist\//g, ''),
+         this.scene,
+         (newMeshes: AbstractMesh[]) => {
+            const material = this.createMaterial()
+            this.mesh = new AbstractMesh('penguinParts') as Mesh
+            let index = 0
+            for (let mesh of newMeshes) {
+               if (index++ > 4) continue
+               mesh.parent = this.mesh
+               mesh.material = material
+               // mesh.rotate(Axis.Y, Math.PI)
+            }
+
+            this.mesh.scaling = new Vector3(1.5, 1.5, 1.5)
+
+            // Set the target of the camera to the first imported mesh
+            //this.mesh = newMeshes[3]
+         }
+      )
+      /* this.mesh = MeshBuilder.CreateBox(
          'playerBox',
          { size: 4, width: 2, height: 2 },
          this.scene
-      )
+      )*/
       this.mesh.position = this.startPosition
       const { arcCamera, followCamera } = this.game.camera
       if (followCamera) {
@@ -183,7 +215,7 @@ export default class Player extends GameObject {
             const angleDelta = this.targetForceAngle - this.forceAngle
             this.forceAngle +=
                (angleDelta * deltaTime) /
-               (this.mode === PlayerMode.Downhill ? 650 : 300)
+               (this.mode === PlayerMode.Downhill ? 600 : 320)
 
             this.mesh.rotation.y = this.forceAngle
          } else {
