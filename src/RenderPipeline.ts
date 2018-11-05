@@ -21,11 +21,11 @@ export default class RenderPipeline {
       pipeline.imageProcessing.vignetteEnabled = true
       pipeline.imageProcessing.vignetteBlendMode =
          ImageProcessingConfiguration.VIGNETTEMODE_MULTIPLY
-      pipeline.imageProcessing.vignetteColor = new BABYLON.Color4(0, 0, 0, 0.9)
-      pipeline.imageProcessing.vignetteWeight = 1.5
+      pipeline.imageProcessing.vignetteColor = new BABYLON.Color4(0, 0, 0, 1)
+      pipeline.imageProcessing.vignetteWeight = 1.9
       //pipeline.imageProcessing.toneMappingEnabled = true
-      pipeline.imageProcessing.colorCurvesEnabled = true
-      pipeline.imageProcessing.contrast = 1
-      pipeline.imageProcessing.exposure = 1
+      //   pipeline.imageProcessing.colorCurvesEnabled = true
+      //   pipeline.imageProcessing.contrast = 1
+      //   pipeline.imageProcessing.exposure = 1
    }
 }
