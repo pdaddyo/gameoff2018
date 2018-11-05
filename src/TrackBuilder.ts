@@ -58,12 +58,12 @@ export default class TrackBuilder {
          pathArray: paths,
       })
 
-      trackMesh.material = this.createTrackMaterial()
+      trackMesh.material = this.createMaterial()
       this.track.mesh = trackMesh
       return this.track
    }
 
-   createTrackMaterial() {
+   createMaterial() {
       const material = new BABYLON.StandardMaterial('mat1', this.scene)
       material.alpha = 1
       material.diffuseColor = new BABYLON.Color3(0.95, 0.97, 1)
@@ -109,7 +109,7 @@ export default class TrackBuilder {
                -trackChunk.height,
                0
             )
-            const cornerStartY = this.cursor.position.y + 0.2
+            const cornerStartY = this.cursor.position.y + 0.1
             // translate cursor to post positoin
             this.cursor.locallyTranslate(postTranslation)
             const range = radius / 2 + trackWidth / 2
@@ -169,11 +169,6 @@ export default class TrackBuilder {
                )
             }
 
-            this.cursor.translate(
-               Vector3.Forward(),
-               divisionLength,
-               Space.LOCAL
-            )
             this.cursor.position.y -= trackChunk.height / divisions
 
             if (
@@ -185,6 +180,19 @@ export default class TrackBuilder {
                   Axis.Y,
                   ((Math.PI * rotations * 2) / divisions) * cornerMultiplier,
                   Space.WORLD
+               )
+
+               this.cursor.translate(
+                  Vector3.Forward(),
+                  divisionLength * (rotations / 0.5),
+                  Space.LOCAL
+               )
+            } else {
+               // downhill
+               this.cursor.translate(
+                  Vector3.Forward(),
+                  divisionLength,
+                  Space.LOCAL
                )
             }
          }
