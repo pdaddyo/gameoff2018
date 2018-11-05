@@ -38,8 +38,8 @@ export type TrackChunk = TrackChunkStraight | TrackChunkCorner
 
 export default class TrackBuilder {
    private scene: Scene
-   defaultCornerRadius = 20
-   defaultTrackWidth = 12
+   defaultCornerRadius = 22
+   defaultTrackWidth = 15
    defaultDivisions = 20
    parallelPathCount = 5 // odd number recommended
    cornerOuterBias = 0.45
