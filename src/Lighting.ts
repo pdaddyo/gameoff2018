@@ -14,7 +14,7 @@ export default class Lighting {
    constructor(game: Game) {
       const { scene, player } = game
       scene.ambientColor = Color3.FromHexString('#99a4cc')
-      scene.clearColor = Color4.FromHexString('#57ccfcff')
+      scene.clearColor = Color4.FromHexString('#27acfcff')
 
       const hemi = new HemisphericLight(
          'lighthemi',
@@ -26,7 +26,7 @@ export default class Lighting {
 
       const light = new DirectionalLight(
          'light1',
-         new Vector3(-1, -1, 0.2),
+         new Vector3(-1, -1.5, 0.2),
          scene
       )
       light.shadowEnabled = true
