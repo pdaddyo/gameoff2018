@@ -6,12 +6,34 @@ module.exports = {
    output: {
       filename: 'compiled.js',
       path: path.resolve(__dirname, 'dist'),
+      publicPath: '/dist/',
    },
    resolve: {
       extensions: ['.ts'],
    },
    module: {
-      rules: [{ test: /\.tsx?$/, loader: 'ts-loader' }],
+      rules: [
+         { test: /\.tsx?$/, loader: 'ts-loader' },
+         {
+            test: /\.(png|jpg|gif|babylon)$/i,
+            use: [
+               {
+                  loader: 'url-loader',
+                  options: {
+                     limit: 8192,
+                  },
+               },
+            ],
+         },
+         {
+            test: /\.exec.js$/i,
+            use: [
+               {
+                  loader: 'script-loader',
+               },
+            ],
+         },
+      ],
    },
    mode: 'development',
    externals: {
