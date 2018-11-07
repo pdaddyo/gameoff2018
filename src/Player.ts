@@ -39,6 +39,7 @@ export default class Player extends GameObject {
    driftDeadZone = 0
    trackAngle = 0
    ragdollSpinSpeed = 0.25
+   ragdollFallSpeed = 1.0
    ragdollShrinkRate = 0.97
 
    reset() {
@@ -244,6 +245,7 @@ export default class Player extends GameObject {
                (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
             position.z +=
                (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
+            position.y -= this.ragdollFallSpeed
             this.mesh.rotation.y += this.ragdollSpinSpeed
             this.mesh.scaling = this.mesh.scaling.multiplyByFloats(this.ragdollShrinkRate, this.ragdollShrinkRate, this.ragdollShrinkRate)
          }
