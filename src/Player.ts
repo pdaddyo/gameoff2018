@@ -37,6 +37,9 @@ export default class Player extends GameObject {
    corneringAcceleration = 0.02
    driftDeadZone = 0
    trackAngle = 0
+   isRagdoll = false
+   ragdollSpinSpeed = 0.25
+   ragdollShrinkRate = 0.97
 
    reset() {
       this.speed = this.startSpeed
@@ -44,6 +47,7 @@ export default class Player extends GameObject {
       this.mesh.position = this.startPosition.clone()
       this.mesh.rotation = this.startRotation.clone()
       this.mesh.scaling = this.startScaling.clone()
+      this.isRagdoll = false
    }
 
    createMaterial() {
@@ -104,6 +108,8 @@ export default class Player extends GameObject {
       playerDebugGui.add(this.mesh.rotation, 'x', -8, 8)
       playerDebugGui.add(this.mesh.rotation, 'y', -8, 8)
       playerDebugGui.add(this.mesh.rotation, 'z', -8, 8)
+      playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 1)
+      playerDebugGui.add(this, 'ragdollShrinkRate', 0.8, 1)
    }
 
    private lookTowardsDeltaTime = 0
@@ -145,90 +151,100 @@ export default class Player extends GameObject {
       const { position } = this.mesh
 
       if (this.game.isPlaying) {
-         // check for cornering
-         this.checkCorneringStatus()
+         if (!this.isRagdoll) {
+            // check for cornering
+            this.checkCorneringStatus()
 
-         // check ground beneath us
-         this.ray.origin = position
-         this.ray.direction = down
-         const result = this.ray.intersectsMesh(this.game.track.mesh, false)
-         if (result.hit) {
-            const normal = result.getNormal(true, true)!
-            const across = Vector3.Cross(normal, Vector3.Down())
-            const downhillVector = Vector3.Cross(across, normal)
-            this.trackAngle = Math.atan2(downhillVector.x, downhillVector.z)
+            // check ground beneath us
+            this.ray.origin = position
+            this.ray.direction = down
+            const result = this.ray.intersectsMesh(this.game.track.mesh, false)
+            if (result.hit) {
+               const normal = result.getNormal(true, true)!
+               const across = Vector3.Cross(normal, Vector3.Down())
+               const downhillVector = Vector3.Cross(across, normal)
+               this.trackAngle = Math.atan2(downhillVector.x, downhillVector.z)
 
-            if (!this.lastDownhillVector) {
-               this.lastDownhillVector = downhillVector
-               //      this.lookTowards(this.lastDownhillVector, downhillVector)
-            }
+               if (!this.lastDownhillVector) {
+                  this.lastDownhillVector = downhillVector
+                  //   this.lookTowards(this.lastDownhillVector, downhillVector)
+               }
 
-            // has the downward vector changed enough?
-            if (
-               this.lastDownhillVector &&
-               !this.lastDownhillVector.equalsWithEpsilon(downhillVector, 0.01)
-            ) {
-               //      this.lookTowards(this.lastDownhillVector, downhillVector)
-               this.lastDownhillVector = downhillVector
-            }
-            this.updateLookTowards()
-            // pin y to floor
-            position.y = result.pickedPoint!.y + this.offsetFromGround
+               // has the downward vector changed enough?
+               if (
+                  this.lastDownhillVector &&
+                  !this.lastDownhillVector.equalsWithEpsilon(downhillVector, 0.01)
+               ) {
+                  //   this.lookTowards(this.lastDownhillVector, downhillVector)
+                  this.lastDownhillVector = downhillVector
+               }
+               this.updateLookTowards()
+               // pin y to floor
+               position.y = result.pickedPoint!.y + this.offsetFromGround
 
-            if (this.mode === PlayerMode.Downhill) {
-               position.x +=
-                  (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
-               position.z +=
-                  (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
-            }
+               if (this.mode === PlayerMode.Downhill) {
+                  position.x +=
+                     (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
+                  position.z +=
+                     (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
+               }
 
-            if (this.mode === PlayerMode.Cornering) {
-               this.corneringDuration += this.game.deltaTime
-               const angle =
-                  this.corneringStartAngle +
-                  (this.corneringPost!.directionMultiplier *
-                     this.corneringDuration *
-                     (12 / this.corneringRadius) *
-                     (this.speed / 10)) /
+               if (this.mode === PlayerMode.Cornering) {
+                  this.corneringDuration += this.game.deltaTime
+                  const angle =
+                     this.corneringStartAngle +
+                     (this.corneringPost!.directionMultiplier *
+                        this.corneringDuration *
+                        (12 / this.corneringRadius) *
+                        (this.speed / 10)) /
                      124
-               position.x =
-                  this.corneringPost!.mesh.position.x +
-                  Math.sin(angle) * this.corneringRadius
-               position.z =
-                  this.corneringPost!.mesh.position.z +
-                  Math.cos(angle) * this.corneringRadius
+                  position.x =
+                     this.corneringPost!.mesh.position.x +
+                     Math.sin(angle) * this.corneringRadius
+                  position.z =
+                     this.corneringPost!.mesh.position.z +
+                     Math.cos(angle) * this.corneringRadius
 
-               this.speed += (this.corneringAcceleration * deltaTime) / 1000
+                  this.speed += (this.corneringAcceleration * deltaTime) / 1000
 
-               this.targetForceAngle =
-                  angle +
-                  (this.corneringPost!.directionMultiplier * Math.PI) / 2
-               while (this.targetForceAngle > Math.PI) {
-                  this.targetForceAngle -= Math.PI * 2
+                  this.targetForceAngle =
+                     angle +
+                     (this.corneringPost!.directionMultiplier * Math.PI) / 2
+                  while (this.targetForceAngle > Math.PI) {
+                     this.targetForceAngle -= Math.PI * 2
+                  }
+
+                  while (this.targetForceAngle < -Math.PI) {
+                     this.targetForceAngle += Math.PI * 2
+                  }
+
+                  this.grapplingLine.updateCornering(this.mesh.position.y, angle)
                }
 
-               while (this.targetForceAngle < -Math.PI) {
-                  this.targetForceAngle += Math.PI * 2
-               }
+               // head towards target angle
+               const angleDelta = this.targetForceAngle - this.forceAngle
+               this.forceAngle +=
+                  (angleDelta * deltaTime) /
+                  (this.mode === PlayerMode.Downhill ? 600 : 320)
 
-               this.grapplingLine.updateCornering(this.mesh.position.y, angle)
+               this.mesh.rotation.y = this.forceAngle - Math.PI
+            } else {
+               // no ground beneath us so ragdoll
+               this.isRagdoll = true
+               delay(() => {
+                  console.log('game over')
+                  this.game.isPlaying = false
+                  this.game.reset()
+               }, 500)
             }
-
-            // head towards target angle
-            const angleDelta = this.targetForceAngle - this.forceAngle
-            this.forceAngle +=
-               (angleDelta * deltaTime) /
-               (this.mode === PlayerMode.Downhill ? 600 : 320)
-
-            this.mesh.rotation.y = this.forceAngle - Math.PI
          } else {
-            console.log('game over')
-            this.speed = 0
-            this.game.isPlaying = false
-            // no ground beneath us, round fail for now
-            delay(() => {
-               this.game.reset()
-            }, 500)
+            //ragdoll animation
+            position.x +=
+               (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
+            position.z +=
+               (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
+            this.mesh.rotation.y += this.ragdollSpinSpeed
+            this.mesh.scaling = this.mesh.scaling.multiplyByFloats(this.ragdollShrinkRate, this.ragdollShrinkRate, this.ragdollShrinkRate)
          }
       }
 
