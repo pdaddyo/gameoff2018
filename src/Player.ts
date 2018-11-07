@@ -8,6 +8,7 @@ import GrapplingLine from './GrapplingLine'
 export enum PlayerMode {
    Downhill,
    Cornering,
+   Ragdoll,
 }
 
 const down = Vector3.Down()
@@ -37,7 +38,6 @@ export default class Player extends GameObject {
    corneringAcceleration = 0.02
    driftDeadZone = 0
    trackAngle = 0
-   isRagdoll = false
    ragdollSpinSpeed = 0.25
    ragdollShrinkRate = 0.97
 
@@ -47,7 +47,7 @@ export default class Player extends GameObject {
       this.mesh.position = this.startPosition.clone()
       this.mesh.rotation = this.startRotation.clone()
       this.mesh.scaling = this.startScaling.clone()
-      this.isRagdoll = false
+      this.mode = PlayerMode.Downhill
    }
 
    createMaterial() {
@@ -109,6 +109,7 @@ export default class Player extends GameObject {
       playerDebugGui.add(this.mesh.rotation, 'y', -8, 8)
       playerDebugGui.add(this.mesh.rotation, 'z', -8, 8)
       playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 1)
+      playerDebugGui.add(this, 'ragdollFallSpeed', 0.01, 5)
       playerDebugGui.add(this, 'ragdollShrinkRate', 0.8, 1)
    }
 
@@ -151,7 +152,7 @@ export default class Player extends GameObject {
       const { position } = this.mesh
 
       if (this.game.isPlaying) {
-         if (!this.isRagdoll) {
+         if (this.mode != PlayerMode.Ragdoll) {
             // check for cornering
             this.checkCorneringStatus()
 
@@ -230,7 +231,7 @@ export default class Player extends GameObject {
                this.mesh.rotation.y = this.forceAngle - Math.PI
             } else {
                // no ground beneath us so ragdoll
-               this.isRagdoll = true
+               this.mode = PlayerMode.Ragdoll
                delay(() => {
                   console.log('game over')
                   this.game.isPlaying = false
