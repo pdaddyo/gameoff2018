@@ -41,6 +41,7 @@
 <body>
     <canvas id="renderCanvas"></canvas>
     <button id="enableDebug">Toggle Tools</button>
+    <script src="http://gameoff.dreamm.co.uk/dist/pep.js"></script>
     <script src="./dist/compiled.js"></script>
     <script>
         (function () { var script = document.createElement('script'); script.onload = function () { var stats = new Stats(); document.body.appendChild(stats.dom); requestAnimationFrame(function loop() { stats.update(); requestAnimationFrame(loop) }); }; script.src = '//rawgit.com/mrdoob/stats.js/master/build/stats.min.js'; document.head.appendChild(script); })()
