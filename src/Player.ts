@@ -15,6 +15,8 @@ const down = Vector3.Down()
 export default class Player extends GameObject {
    mode = PlayerMode.Downhill
    startPosition = new Vector3(0, 3, 0)
+   startRotation = new Vector3(0, 3.141, 0)
+   startScaling = new Vector3(1.5, 1.5, 1.5)
    grapplingLine = new GrapplingLine()
    ray: Ray = new Ray(Vector3.Zero(), down)
    offsetFromGround = 1
@@ -39,8 +41,9 @@ export default class Player extends GameObject {
    reset() {
       this.speed = this.startSpeed
       this.targetForceAngle = this.forceAngle = this.startForceAngle
-      this.mesh.position = new Vector3(0, 3, 0)
-      this.mesh.rotation.set(0, 0, 0)
+      this.mesh.position = this.startPosition.clone()
+      this.mesh.rotation = this.startRotation.clone()
+      this.mesh.scaling = this.startScaling.clone()
    }
 
    createMaterial() {
@@ -71,9 +74,8 @@ export default class Player extends GameObject {
                   mesh.material = material
                }
             }
-
-            this.mesh.scaling = new Vector3(1.5, 1.5, 1.5)
             this.mesh.setPivotPoint(new Vector3(0, 1, -1))
+            this.reset()
             // Set the target of the camera to the first imported mesh
             //this.mesh = newMeshes[3]
          }
@@ -83,7 +85,6 @@ export default class Player extends GameObject {
          { size: 4, width: 2, height: 2 },
          this.scene
       )*/
-      this.mesh.position = this.startPosition
       const { arcCamera, followCamera } = this.game.camera
       if (followCamera) {
          followCamera.lockedTarget = this.cameraTarget
