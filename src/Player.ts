@@ -5,7 +5,7 @@ import InteractablePost from './InteractablePost'
 import gui from './util/gui'
 import GrapplingLine from './GrapplingLine'
 
-enum PlayerMode {
+export enum PlayerMode {
    Downhill,
    Cornering,
 }
