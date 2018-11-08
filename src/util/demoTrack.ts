@@ -3,7 +3,7 @@ import { TrackChunkType, TrackChunk } from '../TrackBuilder'
 export default [
    {
       type: TrackChunkType.Straight,
-      height: 4,
+      height: 7,
       length: 34,
    },
    {
