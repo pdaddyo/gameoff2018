@@ -38,9 +38,9 @@ export default class Player extends GameObject {
    corneringAcceleration = 0.02
    driftDeadZone = 0
    trackAngle = 0
-   ragdollSpinSpeed = 0.25
-   ragdollFallSpeed = 1.0
-   ragdollShrinkRate = 0.97
+   ragdollSpinSpeed = 0.02
+   ragdollFallSpeed = 0.085
+   ragdollShrinkRate = 0.003
 
    reset() {
       this.speed = this.startSpeed
@@ -109,9 +109,9 @@ export default class Player extends GameObject {
       playerDebugGui.add(this.mesh.rotation, 'x', -8, 8)
       playerDebugGui.add(this.mesh.rotation, 'y', -8, 8)
       playerDebugGui.add(this.mesh.rotation, 'z', -8, 8)
-      playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 1)
-      playerDebugGui.add(this, 'ragdollFallSpeed', 0.01, 5)
-      playerDebugGui.add(this, 'ragdollShrinkRate', 0.8, 1)
+      playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 0.1)
+      playerDebugGui.add(this, 'ragdollFallSpeed', 0.001, 0.1)
+      playerDebugGui.add(this, 'ragdollShrinkRate', 0.001, 0.01)
    }
 
    private lookTowardsDeltaTime = 0
@@ -245,9 +245,11 @@ export default class Player extends GameObject {
                (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
             position.z +=
                (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
-            position.y -= this.ragdollFallSpeed
-            this.mesh.rotation.y += this.ragdollSpinSpeed
-            this.mesh.scaling = this.mesh.scaling.multiplyByFloats(this.ragdollShrinkRate, this.ragdollShrinkRate, this.ragdollShrinkRate)
+            position.y -= this.ragdollFallSpeed * deltaTime
+            this.mesh.rotation.y += this.ragdollSpinSpeed * deltaTime
+            this.mesh.scaling.x = Math.max(0, this.mesh.scaling.x - (this.ragdollShrinkRate * deltaTime))
+            this.mesh.scaling.y = Math.max(0, this.mesh.scaling.y - (this.ragdollShrinkRate * deltaTime))
+            this.mesh.scaling.z = Math.max(0, this.mesh.scaling.z - (this.ragdollShrinkRate * deltaTime))
          }
       }
 
