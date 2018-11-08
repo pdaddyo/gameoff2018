@@ -27,7 +27,7 @@ export default class Player extends GameObject {
    startForceAngle = 0
    forceAngle = 0
    targetForceAngle = 0
-   startSpeed = 2.6
+   startSpeed = 3
    speed = 0
    maxSpeed = 10
    isCornering = false
@@ -38,9 +38,10 @@ export default class Player extends GameObject {
    corneringAcceleration = 0.02
    driftDeadZone = 0
    trackAngle = 0
-   ragdollSpinSpeed = 0.02
-   ragdollFallSpeed = 0.085
-   ragdollShrinkRate = 0.003
+   ragdollSpinSpeed = 0.01
+   ragdollFallSpeed = 0.0185
+   ragdollShrinkRate = 0.0013
+   maxTurnSpeed = 0.004
 
    reset() {
       this.speed = this.startSpeed
@@ -81,15 +82,9 @@ export default class Player extends GameObject {
             }
             this.mesh.setPivotPoint(new Vector3(0, 1, -1))
             this.reset()
-            // Set the target of the camera to the first imported mesh
-            //this.mesh = newMeshes[3]
          }
       )
-      /* this.mesh = MeshBuilder.CreateBox(
-         'playerBox',
-         { size: 4, width: 2, height: 2 },
-         this.scene
-      )*/
+
       const { arcCamera, followCamera } = this.game.camera
       if (followCamera) {
          followCamera.lockedTarget = this.cameraTarget
@@ -106,51 +101,15 @@ export default class Player extends GameObject {
       playerDebugGui.add(this, 'startSpeed', 0, 10)
       playerDebugGui.add(this, 'speed', 0, 10)
       playerDebugGui.add(this, 'driftDeadZone', 0, 5)
-      playerDebugGui.add(this.mesh.rotation, 'x', -8, 8)
-      playerDebugGui.add(this.mesh.rotation, 'y', -8, 8)
-      playerDebugGui.add(this.mesh.rotation, 'z', -8, 8)
       playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 0.1)
       playerDebugGui.add(this, 'ragdollFallSpeed', 0.001, 0.1)
       playerDebugGui.add(this, 'ragdollShrinkRate', 0.001, 0.01)
    }
 
-   private lookTowardsDeltaTime = 0
-   private lookTowardsCurrent = Vector3.Zero()
-   private lookTowardsTarget: Vector3 | null = null
-   lookTowardsSpeed = 150
-
-   lookTowards(current: Vector3, target: Vector3) {
-      this.lookTowardsDeltaTime = 0
-      this.lookTowardsCurrent = current
-      this.lookTowardsTarget = target
-   }
-
-   updateLookTowards() {
-      if (this.lookTowardsTarget) {
-         this.lookTowardsDeltaTime += this.game.deltaTime
-         if (this.lookTowardsDeltaTime > this.lookTowardsSpeed) {
-            this.lookTowardsCurrent = this.lookTowardsTarget
-            this.mesh.lookAt(this.mesh.position.add(this.lookTowardsTarget))
-            this.lookTowardsTarget = null
-            return
-         }
-         this.mesh.lookAt(
-            this.mesh.position.add(
-               Vector3.Lerp(
-                  this.lookTowardsCurrent,
-                  this.lookTowardsTarget,
-                  this.lookTowardsDeltaTime / this.lookTowardsSpeed
-               )
-            )
-         )
-      }
-   }
-
-   private lastDownhillVector?: Vector3
-
    update() {
       const { deltaTime } = this.game
       const { position } = this.mesh
+      let exitAngleAnimationSpeed = 0
 
       if (this.game.isPlaying) {
          if (this.mode != PlayerMode.Ragdoll) {
@@ -167,20 +126,6 @@ export default class Player extends GameObject {
                const downhillVector = Vector3.Cross(across, normal)
                this.trackAngle = Math.atan2(downhillVector.x, downhillVector.z)
 
-               if (!this.lastDownhillVector) {
-                  this.lastDownhillVector = downhillVector
-                  //   this.lookTowards(this.lastDownhillVector, downhillVector)
-               }
-
-               // has the downward vector changed enough?
-               if (
-                  this.lastDownhillVector &&
-                  !this.lastDownhillVector.equalsWithEpsilon(downhillVector, 0.01)
-               ) {
-                  //   this.lookTowards(this.lastDownhillVector, downhillVector)
-                  this.lastDownhillVector = downhillVector
-               }
-               this.updateLookTowards()
                // pin y to floor
                position.y = result.pickedPoint!.y + this.offsetFromGround
 
@@ -193,25 +138,30 @@ export default class Player extends GameObject {
 
                if (this.mode === PlayerMode.Cornering) {
                   this.corneringDuration += this.game.deltaTime
+                  const {
+                     rotations,
+                     directionMultiplier,
+                     exitAngle,
+                     mesh: corneringPostMesh,
+                  } = this.corneringPost!
                   const angle =
                      this.corneringStartAngle +
-                     (this.corneringPost!.directionMultiplier *
+                     (directionMultiplier *
                         this.corneringDuration *
                         (12 / this.corneringRadius) *
                         (this.speed / 10)) /
-                     124
+                        124
                   position.x =
-                     this.corneringPost!.mesh.position.x +
+                     corneringPostMesh.position.x +
                      Math.sin(angle) * this.corneringRadius
                   position.z =
-                     this.corneringPost!.mesh.position.z +
+                     corneringPostMesh.position.z +
                      Math.cos(angle) * this.corneringRadius
 
                   this.speed += (this.corneringAcceleration * deltaTime) / 1000
 
                   this.targetForceAngle =
-                     angle +
-                     (this.corneringPost!.directionMultiplier * Math.PI) / 2
+                     angle + (directionMultiplier * Math.PI) / 2
                   while (this.targetForceAngle > Math.PI) {
                      this.targetForceAngle -= Math.PI * 2
                   }
@@ -220,14 +170,40 @@ export default class Player extends GameObject {
                      this.targetForceAngle += Math.PI * 2
                   }
 
-                  this.grapplingLine.updateCornering(this.mesh.position.clone(), angle, deltaTime)
+                  this.targetForceAngle =
+                     exitAngle +
+                     // add in a little over-correction
+                     directionMultiplier * 0.25
+
+                  if (rotations <= 1 / 3) {
+                     exitAngleAnimationSpeed = 450
+                  } else {
+                     exitAngleAnimationSpeed = 600 * (rotations / 0.5)
+                  }
+
+                  this.grapplingLine.updateCornering(
+                     this.mesh.position.clone(),
+                     angle,
+                     deltaTime
+                  )
                }
 
                // head towards target angle
-               const angleDelta = this.targetForceAngle - this.forceAngle
-               this.forceAngle +=
-                  (angleDelta * deltaTime) /
-                  (this.mode === PlayerMode.Downhill ? 600 : 320)
+               const angleDeltaToTarget =
+                  this.targetForceAngle - this.forceAngle
+               let angleDelta =
+                  angleDeltaToTarget /
+                  (this.mode === PlayerMode.Downhill
+                     ? 600
+                     : exitAngleAnimationSpeed)
+
+               // clamp is missing in JS!?
+               angleDelta = Math.min(
+                  this.maxTurnSpeed,
+                  Math.max(-this.maxTurnSpeed, angleDelta)
+               )
+
+               this.forceAngle += angleDelta * deltaTime
 
                this.mesh.rotation.y = this.forceAngle - Math.PI
             } else {
@@ -248,9 +224,18 @@ export default class Player extends GameObject {
                (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
             position.y -= this.ragdollFallSpeed * deltaTime
             this.mesh.rotation.y += this.ragdollSpinSpeed * deltaTime
-            this.mesh.scaling.x = Math.max(0, this.mesh.scaling.x - (this.ragdollShrinkRate * deltaTime))
-            this.mesh.scaling.y = Math.max(0, this.mesh.scaling.y - (this.ragdollShrinkRate * deltaTime))
-            this.mesh.scaling.z = Math.max(0, this.mesh.scaling.z - (this.ragdollShrinkRate * deltaTime))
+            this.mesh.scaling.x = Math.max(
+               0,
+               this.mesh.scaling.x - this.ragdollShrinkRate * deltaTime
+            )
+            this.mesh.scaling.y = Math.max(
+               0,
+               this.mesh.scaling.y - this.ragdollShrinkRate * deltaTime
+            )
+            this.mesh.scaling.z = Math.max(
+               0,
+               this.mesh.scaling.z - this.ragdollShrinkRate * deltaTime
+            )
          }
       }
 
@@ -309,10 +294,14 @@ export default class Player extends GameObject {
 
    stopCornering() {
       this.mode = PlayerMode.Downhill
+      // stop targetting, aim a bit off
+      this.targetForceAngle =
+         this.forceAngle + this.corneringPost!.directionMultiplier * 0.2
       this.grapplingLine.stopCornering()
+      console.log(this.forceAngle, this.corneringPost!.exitAngle)
       this.corneringPost = null
-      delay(() => {
-         this.targetForceAngle = this.trackAngle
-      }, 350)
+      // delay(() => {
+      //    this.targetForceAngle = this.trackAngle
+      // }, 350)
    }
 }
