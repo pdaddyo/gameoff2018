@@ -7,6 +7,9 @@ export default class InteractablePost extends Interactable {
    directionMultiplier = 0
    wasRotatingLastFrame = false
    cornerStartY = 0
+   exitAngle = 0
+   rotations = 1 / 2
+
    constructor(
       postIndex: number,
       position: Vector3,
