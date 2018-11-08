@@ -77,6 +77,7 @@ export default class TrackBuilder {
       const centerPath = [] as Vector3[]
       const paths = [] as Vector3[][]
       let cornerIndex = 0
+      let newPost: InteractablePost | null = null
 
       // prepare the path arrays
       for (let pathIndex = 0; pathIndex < this.parallelPathCount; pathIndex++) {
@@ -90,13 +91,14 @@ export default class TrackBuilder {
             trackChunk.type == TrackChunkType.Straight
                ? 0
                : trackChunk.type === TrackChunkType.LeftCorner
-                  ? -1
-                  : 1
+               ? -1
+               : 1
          const divisionLength =
             trackChunk.type === TrackChunkType.Straight
                ? trackChunk.length / divisions
                : ((trackChunk.radius || this.defaultCornerRadius) / divisions) *
                  1.6
+         newPost = null
 
          if (
             trackChunk.type === TrackChunkType.LeftCorner ||
@@ -113,15 +115,14 @@ export default class TrackBuilder {
             // translate cursor to post positoin
             this.cursor.locallyTranslate(postTranslation)
             const range = radius / 2 + trackWidth / 2
-            this.track.interactables.push(
-               new InteractablePost(
-                  ++cornerIndex,
-                  this.cursor.position,
-                  range,
-                  cornerStartY,
-                  cornerMultiplier
-               )
+            newPost = new InteractablePost(
+               ++cornerIndex,
+               this.cursor.position,
+               range,
+               cornerStartY,
+               cornerMultiplier
             )
+            this.track.interactables.push(newPost)
             // translate cursor back again
             this.cursor.locallyTranslate(
                postTranslation.multiplyInPlace(new Vector3(-1, -1, -1))
@@ -176,6 +177,9 @@ export default class TrackBuilder {
                trackChunk.type === TrackChunkType.RightCorner
             ) {
                const rotations = trackChunk.rotations || 1 / 2
+               if (newPost) {
+                  newPost.rotations = rotations
+               }
                this.cursor.rotate(
                   Axis.Y,
                   ((Math.PI * rotations * 2) / divisions) * cornerMultiplier,
@@ -194,6 +198,22 @@ export default class TrackBuilder {
                   divisionLength,
                   Space.LOCAL
                )
+            }
+
+            if (newPost) {
+               const prePos = this.cursor.position.clone()
+               this.cursor.translate(Vector3.Forward(), 1, Space.LOCAL)
+               const afterPos = this.cursor.position.clone()
+               this.cursor.translate(Vector3.Forward(), -1, Space.LOCAL)
+
+               const exitAngle = Math.atan2(
+                  afterPos.x - prePos.x,
+                  afterPos.z - prePos.z
+               )
+
+               newPost.exitAngle = exitAngle
+
+               console.log('post exit angle ', exitAngle)
             }
          }
       }
