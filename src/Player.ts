@@ -220,7 +220,7 @@ export default class Player extends GameObject {
                      this.targetForceAngle += Math.PI * 2
                   }
 
-                  this.grapplingLine.updateCornering(this.mesh.position.y, angle)
+                  this.grapplingLine.updateCornering(this.mesh.position.y, angle, deltaTime)
                }
 
                // head towards target angle
@@ -233,6 +233,7 @@ export default class Player extends GameObject {
             } else {
                // no ground beneath us so ragdoll
                this.mode = PlayerMode.Ragdoll
+               this.grapplingLine.stopCornering()
                delay(() => {
                   console.log('game over')
                   this.game.isPlaying = false
