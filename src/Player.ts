@@ -8,6 +8,7 @@ import GrapplingLine from './GrapplingLine'
 export enum PlayerMode {
    Downhill,
    Cornering,
+   Ragdoll,
 }
 
 const down = Vector3.Down()
@@ -15,7 +16,7 @@ const down = Vector3.Down()
 export default class Player extends GameObject {
    mode = PlayerMode.Downhill
    startPosition = new Vector3(0, 3, 0)
-   startRotation = new Vector3(0, 3.141, 0)
+   startRotation = new Vector3(0, Math.PI, 0)
    startScaling = new Vector3(1.5, 1.5, 1.5)
    grapplingLine = new GrapplingLine()
    ray: Ray = new Ray(Vector3.Zero(), down)
@@ -37,9 +38,9 @@ export default class Player extends GameObject {
    corneringAcceleration = 0.02
    driftDeadZone = 0
    trackAngle = 0
-   isRagdoll = false
-   ragdollSpinSpeed = 0.25
-   ragdollShrinkRate = 0.97
+   ragdollSpinSpeed = 0.02
+   ragdollFallSpeed = 0.085
+   ragdollShrinkRate = 0.003
 
    reset() {
       this.speed = this.startSpeed
@@ -47,7 +48,7 @@ export default class Player extends GameObject {
       this.mesh.position = this.startPosition.clone()
       this.mesh.rotation = this.startRotation.clone()
       this.mesh.scaling = this.startScaling.clone()
-      this.isRagdoll = false
+      this.mode = PlayerMode.Downhill
    }
 
    createMaterial() {
@@ -108,8 +109,9 @@ export default class Player extends GameObject {
       playerDebugGui.add(this.mesh.rotation, 'x', -8, 8)
       playerDebugGui.add(this.mesh.rotation, 'y', -8, 8)
       playerDebugGui.add(this.mesh.rotation, 'z', -8, 8)
-      playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 1)
-      playerDebugGui.add(this, 'ragdollShrinkRate', 0.8, 1)
+      playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 0.1)
+      playerDebugGui.add(this, 'ragdollFallSpeed', 0.001, 0.1)
+      playerDebugGui.add(this, 'ragdollShrinkRate', 0.001, 0.01)
    }
 
    private lookTowardsDeltaTime = 0
@@ -151,7 +153,7 @@ export default class Player extends GameObject {
       const { position } = this.mesh
 
       if (this.game.isPlaying) {
-         if (!this.isRagdoll) {
+         if (this.mode != PlayerMode.Ragdoll) {
             // check for cornering
             this.checkCorneringStatus()
 
@@ -218,7 +220,7 @@ export default class Player extends GameObject {
                      this.targetForceAngle += Math.PI * 2
                   }
 
-                  this.grapplingLine.updateCornering(this.mesh.position.y, angle)
+                  this.grapplingLine.updateCornering(this.mesh.position.clone(), angle, deltaTime)
                }
 
                // head towards target angle
@@ -230,7 +232,8 @@ export default class Player extends GameObject {
                this.mesh.rotation.y = this.forceAngle - Math.PI
             } else {
                // no ground beneath us so ragdoll
-               this.isRagdoll = true
+               this.mode = PlayerMode.Ragdoll
+               this.grapplingLine.stopCornering()
                delay(() => {
                   console.log('game over')
                   this.game.isPlaying = false
@@ -243,8 +246,11 @@ export default class Player extends GameObject {
                (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
             position.z +=
                (Math.cos(this.forceAngle) * this.speed * deltaTime) / 100
-            this.mesh.rotation.y += this.ragdollSpinSpeed
-            this.mesh.scaling = this.mesh.scaling.multiplyByFloats(this.ragdollShrinkRate, this.ragdollShrinkRate, this.ragdollShrinkRate)
+            position.y -= this.ragdollFallSpeed * deltaTime
+            this.mesh.rotation.y += this.ragdollSpinSpeed * deltaTime
+            this.mesh.scaling.x = Math.max(0, this.mesh.scaling.x - (this.ragdollShrinkRate * deltaTime))
+            this.mesh.scaling.y = Math.max(0, this.mesh.scaling.y - (this.ragdollShrinkRate * deltaTime))
+            this.mesh.scaling.z = Math.max(0, this.mesh.scaling.z - (this.ragdollShrinkRate * deltaTime))
          }
       }
 
@@ -295,7 +301,7 @@ export default class Player extends GameObject {
       )
 
       this.grapplingLine.startCornering(
-         this.corneringPost,
+         this.mesh.position.clone(),
          this.corneringStartAngle,
          this.corneringRadius
       )
