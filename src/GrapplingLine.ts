@@ -45,19 +45,20 @@ export default class GrapplingLine extends GameObject {
       grappleDebugGui.add(this, 'extendSpeed', 0.001, 0.05)
    }
 
-   startCornering(post: InteractablePost, angle: number, radius: number) {
+   startCornering(position: Vector3, angle: number, radius: number) {
       this.mesh.isVisible = true
-      this.mesh.position = post.mesh.position.clone()
-      this.mesh.rotation.y = angle
+      this.mesh.position = position
+      this.mesh.rotation.y =  Math.PI + angle
       this.mesh.scaling.y = 0
       this.extension = 0
       this.radius = radius      
       this.enableHighlight()
    }
 
-   updateCornering(y: number, angle: number, deltaTime: number) {
-      this.mesh.position.y = y + 0.5
-      this.mesh.rotation.y = angle
+   updateCornering(position: Vector3, angle: number, deltaTime: number) {
+      this.mesh.position = position
+      this.mesh.position.y += 2.5
+      this.mesh.rotation.y = Math.PI + angle
       if(this.extension < 1.0){
          this.extension = Math.min(1.0, this.extension + (this.extendSpeed * deltaTime))
          this.mesh.scaling.y = this.extension * this.radius

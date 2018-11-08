@@ -16,7 +16,7 @@ const down = Vector3.Down()
 export default class Player extends GameObject {
    mode = PlayerMode.Downhill
    startPosition = new Vector3(0, 3, 0)
-   startRotation = new Vector3(0, 3.141, 0)
+   startRotation = new Vector3(0, Math.PI, 0)
    startScaling = new Vector3(1.5, 1.5, 1.5)
    grapplingLine = new GrapplingLine()
    ray: Ray = new Ray(Vector3.Zero(), down)
@@ -220,7 +220,7 @@ export default class Player extends GameObject {
                      this.targetForceAngle += Math.PI * 2
                   }
 
-                  this.grapplingLine.updateCornering(this.mesh.position.y, angle, deltaTime)
+                  this.grapplingLine.updateCornering(this.mesh.position.clone(), angle, deltaTime)
                }
 
                // head towards target angle
@@ -301,7 +301,7 @@ export default class Player extends GameObject {
       )
 
       this.grapplingLine.startCornering(
-         this.corneringPost,
+         this.mesh.position.clone(),
          this.corneringStartAngle,
          this.corneringRadius
       )
