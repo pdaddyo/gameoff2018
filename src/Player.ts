@@ -32,11 +32,10 @@ export default class Player extends GameObject {
    wasTouchingGroundLastFrame = false
    cameraTarget = new Mesh('cameraTarget')
    cameraTargetOffset = new Vector3(0, 0, 0)
-   startForceAngle = 0
+   startForceAngle = 0.15
    forceAngle = 0
    targetForceAngle = 0
    targetRotationY = 0
-
    startSpeed = 3
    speed = 0
    maxSpeed = 10
@@ -53,7 +52,7 @@ export default class Player extends GameObject {
    ragdollShrinkRate = 0.0013
    maxTurnSpeed = 0.004
    grappleOffset = Vector3.Forward()
-   downhillAngle: number
+   downhillAngle = 0
 
    reset() {
       this.speed = this.startSpeed

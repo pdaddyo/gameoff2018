@@ -7,6 +7,7 @@ export default class InteractablePost extends Interactable {
    directionMultiplier = 0
    wasRotatingLastFrame = false
    cornerStartY = 0
+   cornerEndY = 0
    exitAngle = 0
    rotations = 1 / 2
 
@@ -15,11 +16,13 @@ export default class InteractablePost extends Interactable {
       position: Vector3,
       range: number,
       cornerStartY: number,
+      cornerEndY: number,
       directionMultiplier: number
    ) {
       super(range)
       this.directionMultiplier = directionMultiplier
       this.cornerStartY = cornerStartY
+      this.cornerEndY = cornerEndY
       this.mesh = MeshBuilder.CreateCylinder(
          `post${postIndex}`,
          { height: 8, diameterTop: 0, diameterBottom: 4 },

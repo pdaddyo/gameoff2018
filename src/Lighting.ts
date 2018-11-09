@@ -52,7 +52,7 @@ export default class Lighting {
       this.light.includedOnlyMeshes.push(this.game.track.mesh, ...meshes)
       shadowGenerator.getShadowMap()!.renderList!.push(...meshes)
       shadowGenerator.useBlurExponentialShadowMap = true
-      shadowGenerator.blurBoxOffset = 5
+      shadowGenerator.blurBoxOffset = 2
       shadowGenerator.normalBias = 0.1
       shadowGenerator.setDarkness(0.4)
    }

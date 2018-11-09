@@ -57,7 +57,6 @@ export default class TrackBuilder {
       const trackMesh = MeshBuilder.CreateRibbon('track', {
          pathArray: paths,
       })
-
       trackMesh.material = this.createMaterial()
       trackMesh.receiveShadows = true
       this.track.mesh = trackMesh
@@ -69,8 +68,8 @@ export default class TrackBuilder {
       material.alpha = 1
       material.diffuseColor = new BABYLON.Color3(0.95, 0.97, 1)
       material.wireframe = false
-      material.twoSidedLighting = true
-      material.backFaceCulling = false
+      material.twoSidedLighting = false
+      material.backFaceCulling = true
       return material
    }
 
@@ -112,8 +111,8 @@ export default class TrackBuilder {
                -trackChunk.height,
                0
             )
-            const cornerStartY = this.cursor.position.y + 0.1
-            // translate cursor to post positoin
+            const cornerStartY = this.cursor.position.y + 0.9
+            const cornerEndY = this.cursor.position.y - trackChunk.height + 0.3 // translate cursor to post positoin
             this.cursor.locallyTranslate(postTranslation)
             const range = radius / 2 + trackWidth / 2
             newPost = new InteractablePost(
@@ -121,6 +120,7 @@ export default class TrackBuilder {
                this.cursor.position,
                range,
                cornerStartY,
+               cornerEndY,
                cornerMultiplier
             )
             this.track.interactables.push(newPost)

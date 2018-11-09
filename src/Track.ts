@@ -40,6 +40,7 @@ export default class Track extends GameObject {
 
    update() {
       const { player } = this.game
+      const playerPosition = player.mesh.position
       const currentInteractable = this.interactables[
          this.currentInteractableIndex
       ] as InteractablePost
@@ -58,7 +59,7 @@ export default class Track extends GameObject {
       if (!this.availableInteractable) {
          if (
             isInRange &&
-            player.mesh.position.y - player.offsetFromGround <=
+            playerPosition.y - player.offsetFromGround <=
                currentInteractable.cornerStartY
          ) {
             this.availableInteractable = currentInteractable
@@ -66,7 +67,7 @@ export default class Track extends GameObject {
          }
       } else {
          // currently active
-         if (!isInRange) {
+         if (!isInRange || playerPosition.y <= currentInteractable.cornerEndY) {
             this.nextInteractable()
          }
       }
