@@ -44,7 +44,7 @@ export default class Player extends GameObject {
    corneringDuration = 0
    corneringStartAngle = 0
    corneringPost: InteractablePost | null = null
-   corneringAcceleration = 0.01
+   corneringAcceleration = 0.03
    driftDeadZone = 0
    trackAngle = 0
    ragdollSpinSpeed = 0.01
