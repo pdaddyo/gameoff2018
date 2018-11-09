@@ -67,7 +67,8 @@ export default class Track extends GameObject {
          }
       } else {
          // currently active
-         if (!isInRange || playerPosition.y <= currentInteractable.cornerEndY) {
+         //    if (!isInRange || playerPosition.y <= currentInteractable.cornerEndY) {
+         if (!isInRange) {
             this.nextInteractable()
          }
       }

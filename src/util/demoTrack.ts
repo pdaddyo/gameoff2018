@@ -3,42 +3,42 @@ import { TrackChunkType, TrackChunk } from '../TrackBuilder'
 export default [
    {
       type: TrackChunkType.Straight,
-      height: 7,
+      height: 10,
       length: 40,
    },
    {
       type: TrackChunkType.LeftCorner,
-      height: 2,
+      height: 10,
       rotations: 1 / 2 - 1 / 16,
    },
    {
       type: TrackChunkType.Straight,
-      height: 4,
+      height: 10,
       length: 40,
    },
    {
       type: TrackChunkType.RightCorner,
-      height: 3,
+      height: 12,
       rotations: 1 / 2,
    },
    {
       type: TrackChunkType.Straight,
-      height: 4,
+      height: 15,
       length: 40,
    },
    {
       type: TrackChunkType.LeftCorner,
-      height: 2,
+      height: 12,
       rotations: 1 / 2 - 1 / 16,
    },
    {
       type: TrackChunkType.Straight,
-      height: 15,
+      height: 18,
       length: 40,
    },
    {
       type: TrackChunkType.RightCorner,
-      height: 15,
+      height: 12,
       rotations: 2 / 3 + 1 / 16,
    },
 
@@ -50,52 +50,52 @@ export default [
 
    {
       type: TrackChunkType.LeftCorner,
-      height: 3,
+      height: 12,
       rotations: 1 / 2,
    },
    {
       type: TrackChunkType.Straight,
-      height: 4,
+      height: 14,
       length: 40,
    },
    {
       type: TrackChunkType.RightCorner,
-      height: 4,
-      rotations: 1 / 2,
-   },
-   {
-      type: TrackChunkType.Straight,
-      height: 4,
-      length: 40,
-   },
-   {
-      type: TrackChunkType.LeftCorner,
-      height: 3,
-      rotations: 1 / 2 - 1 / 16,
-   },
-   {
-      type: TrackChunkType.Straight,
-      height: 5,
-      length: 40,
-   },
-   {
-      type: TrackChunkType.RightCorner,
-      height: 1,
-      rotations: 1 / 2 - 1 / 16,
-   },
-   {
-      type: TrackChunkType.Straight,
       height: 8,
-      length: 40,
-   },
-   {
-      type: TrackChunkType.LeftCorner,
-      height: 2,
       rotations: 1 / 2,
    },
    {
       type: TrackChunkType.Straight,
-      height: 5,
+      height: 14,
+      length: 40,
+   },
+   {
+      type: TrackChunkType.LeftCorner,
+      height: 8,
+      rotations: 1 / 2 - 1 / 16,
+   },
+   {
+      type: TrackChunkType.Straight,
+      height: 25,
+      length: 40,
+   },
+   {
+      type: TrackChunkType.RightCorner,
+      height: 8,
+      rotations: 1 / 2 - 1 / 16,
+   },
+   {
+      type: TrackChunkType.Straight,
+      height: 18,
+      length: 40,
+   },
+   {
+      type: TrackChunkType.LeftCorner,
+      height: 10,
+      rotations: 1 / 2,
+   },
+   {
+      type: TrackChunkType.Straight,
+      height: 25,
       length: 40,
    },
    {

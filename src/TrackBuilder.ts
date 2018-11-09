@@ -40,9 +40,9 @@ export default class TrackBuilder {
    private scene: Scene
    defaultCornerRadius = 25
    defaultTrackWidth = 15
-   defaultDivisions = 20
-   parallelPathCount = 5 // odd number recommended
-   cornerOuterBias = 0.45
+   defaultDivisions = 30
+   parallelPathCount = 7 // odd number recommended
+   cornerOuterBias = 0 //0.45
    bowlHeight = 0
    cursor: TransformNode
    track = new Track()
