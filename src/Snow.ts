@@ -10,7 +10,7 @@ export default class Snow extends GameObject {
    start() {
       this.particleSystem = new ParticleSystem(
          'particles',
-         500,
+         200,
          this.scene,
          null,
          true
