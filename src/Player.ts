@@ -177,7 +177,7 @@ export default class Player extends GameObject {
                      directionMultiplier * 0.25
 
                   if (rotations <= 1 / 3) {
-                     exitAngleAnimationSpeed = 500
+                     exitAngleAnimationSpeed = 350
                   } else {
                      exitAngleAnimationSpeed = 600 * (rotations / 0.5)
                   }
