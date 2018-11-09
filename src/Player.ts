@@ -1,5 +1,13 @@
 import GameObject from './GameObject'
-import { Vector3, Ray, Mesh, SceneLoader, AbstractMesh, Axis } from 'babylonjs'
+import {
+   Vector3,
+   Ray,
+   Mesh,
+   SceneLoader,
+   AbstractMesh,
+   Color3,
+   Space,
+} from 'babylonjs'
 import { delay } from 'lodash'
 import InteractablePost from './InteractablePost'
 import gui from './util/gui'
@@ -35,13 +43,14 @@ export default class Player extends GameObject {
    corneringDuration = 0
    corneringStartAngle = 0
    corneringPost: InteractablePost | null = null
-   corneringAcceleration = 0.02
+   corneringAcceleration = 0.01
    driftDeadZone = 0
    trackAngle = 0
    ragdollSpinSpeed = 0.01
    ragdollFallSpeed = 0.0185
    ragdollShrinkRate = 0.0013
    maxTurnSpeed = 0.004
+   grappleOffset = Vector3.Forward()
 
    reset() {
       this.speed = this.startSpeed
@@ -49,6 +58,7 @@ export default class Player extends GameObject {
       this.mesh.position = this.startPosition.clone()
       this.mesh.rotation = this.startRotation.clone()
       this.mesh.scaling = this.startScaling.clone()
+      this.mesh.setPivotPoint(new Vector3(0, 0.8, -1.2))
       this.mode = PlayerMode.Downhill
    }
 
@@ -57,7 +67,8 @@ export default class Player extends GameObject {
          'playerMaterial',
          this.scene
       )
-      material.diffuseColor = new BABYLON.Color3(0.2, 0.7, 0.99)
+      material.diffuseColor = Color3.FromHexString('#27acfc')
+      material.specularColor = Color3.Black()
       material.backFaceCulling = false
       return material
    }
@@ -80,7 +91,7 @@ export default class Player extends GameObject {
                   mesh.material = material
                }
             }
-            this.mesh.setPivotPoint(new Vector3(0, 1, -1))
+
             this.reset()
          }
       )
@@ -161,31 +172,22 @@ export default class Player extends GameObject {
                   this.speed += (this.corneringAcceleration * deltaTime) / 1000
 
                   this.targetForceAngle =
-                     angle + (directionMultiplier * Math.PI) / 2
-                  while (this.targetForceAngle > Math.PI) {
-                     this.targetForceAngle -= Math.PI * 2
-                  }
-
-                  while (this.targetForceAngle < -Math.PI) {
-                     this.targetForceAngle += Math.PI * 2
-                  }
-
-                  this.targetForceAngle =
                      exitAngle +
                      // add in a little over-correction
                      directionMultiplier * 0.25
 
                   if (rotations <= 1 / 3) {
-                     exitAngleAnimationSpeed = 450
+                     exitAngleAnimationSpeed = 500
                   } else {
                      exitAngleAnimationSpeed = 600 * (rotations / 0.5)
                   }
-
+                  this.mesh.translate(Vector3.Forward(), -1, Space.LOCAL)
                   this.grapplingLine.updateCornering(
-                     this.mesh.position.clone(),
+                     this.mesh.getAbsolutePosition().clone(),
                      angle,
                      deltaTime
                   )
+                  this.mesh.translate(Vector3.Forward(), 1, Space.LOCAL)
                }
 
                // head towards target angle
@@ -270,10 +272,11 @@ export default class Player extends GameObject {
          0,
          this.corneringPost.mesh.position.z
       )
+      const absolutePlayerPos = this.mesh.position
       const playerPositionFlat = new Vector3(
-         this.mesh.position.x,
+         absolutePlayerPos.x,
          0,
-         this.mesh.position.z
+         absolutePlayerPos.z
       )
 
       this.corneringRadius = Vector3.Distance(
@@ -286,7 +289,7 @@ export default class Player extends GameObject {
       )
 
       this.grapplingLine.startCornering(
-         this.mesh.position.clone(),
+         this.mesh.getAbsolutePosition(),
          this.corneringStartAngle,
          this.corneringRadius
       )
@@ -298,10 +301,6 @@ export default class Player extends GameObject {
       this.targetForceAngle =
          this.forceAngle + this.corneringPost!.directionMultiplier * 0.2
       this.grapplingLine.stopCornering()
-      console.log(this.forceAngle, this.corneringPost!.exitAngle)
       this.corneringPost = null
-      // delay(() => {
-      //    this.targetForceAngle = this.trackAngle
-      // }, 350)
    }
 }
