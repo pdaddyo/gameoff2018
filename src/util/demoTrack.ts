@@ -4,27 +4,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 7,
-      length: 34,
-   },
-   {
-      type: TrackChunkType.LeftCorner,
-      height: 2,
-      rotations: 1 / 3,
-   },
-   {
-      type: TrackChunkType.Straight,
-      height: 4,
-      length: 34,
-   },
-   {
-      type: TrackChunkType.RightCorner,
-      height: 2,
-      rotations: 1 / 2,
-   },
-   {
-      type: TrackChunkType.Straight,
-      height: 4,
-      length: 34,
+      length: 40,
    },
    {
       type: TrackChunkType.LeftCorner,
@@ -34,7 +14,27 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 4,
-      length: 34,
+      length: 40,
+   },
+   {
+      type: TrackChunkType.RightCorner,
+      height: 2,
+      rotations: 1 / 2,
+   },
+   {
+      type: TrackChunkType.Straight,
+      height: 4,
+      length: 40,
+   },
+   {
+      type: TrackChunkType.LeftCorner,
+      height: 2,
+      rotations: 1 / 4,
+   },
+   {
+      type: TrackChunkType.Straight,
+      height: 4,
+      length: 40,
    },
    {
       type: TrackChunkType.RightCorner,
@@ -45,7 +45,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 3,
-      length: 34,
+      length: 40,
    },
 
    {
@@ -56,7 +56,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 4,
-      length: 34,
+      length: 40,
    },
    {
       type: TrackChunkType.RightCorner,
@@ -76,7 +76,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 5,
-      length: 38,
+      length: 50,
    },
    {
       type: TrackChunkType.RightCorner,
@@ -86,7 +86,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 8,
-      length: 35,
+      length: 55,
    },
    {
       type: TrackChunkType.LeftCorner,
@@ -96,7 +96,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 5,
-      length: 35,
+      length: 45,
    },
    {
       type: TrackChunkType.RightCorner,
@@ -106,7 +106,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 8,
-      length: 38,
+      length: 50,
    },
    {
       type: TrackChunkType.LeftCorner,
@@ -136,7 +136,7 @@ export default [
    {
       type: TrackChunkType.Straight,
       height: 10,
-      length: 35,
+      length: 40,
    },
    {
       type: TrackChunkType.RightCorner,
