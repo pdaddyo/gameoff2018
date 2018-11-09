@@ -27,7 +27,7 @@ export default class Player extends GameObject {
    startRotation = new Vector3(0, Math.PI, 0)
    startScaling = new Vector3(1.5, 1.5, 1.5)
    grapplingLine = new GrapplingLine()
-   ray: Ray = new Ray(Vector3.Zero(), down)
+   ray = new Ray(Vector3.Zero(), down)
    offsetFromGround = 1
    wasTouchingGroundLastFrame = false
    cameraTarget = new Mesh('cameraTarget')
@@ -35,6 +35,8 @@ export default class Player extends GameObject {
    startForceAngle = 0
    forceAngle = 0
    targetForceAngle = 0
+   targetRotationY = 0
+
    startSpeed = 3
    speed = 0
    maxSpeed = 10
@@ -51,6 +53,7 @@ export default class Player extends GameObject {
    ragdollShrinkRate = 0.0013
    maxTurnSpeed = 0.004
    grappleOffset = Vector3.Forward()
+   downhillAngle: number
 
    reset() {
       this.speed = this.startSpeed
@@ -58,7 +61,7 @@ export default class Player extends GameObject {
       this.mesh.position = this.startPosition.clone()
       this.mesh.rotation = this.startRotation.clone()
       this.mesh.scaling = this.startScaling.clone()
-      this.mesh.setPivotPoint(new Vector3(0, 0.8, -1.2))
+      this.mesh.setPivotPoint(new Vector3(0, 1.5, -1.2))
       this.mode = PlayerMode.Downhill
    }
 
@@ -83,16 +86,19 @@ export default class Player extends GameObject {
             const material = this.createMaterial()
             this.mesh = new AbstractMesh('penguinParts') as Mesh
             let index = 0
+            const meshesForShadows = [] as AbstractMesh[]
             for (let mesh of newMeshes) {
                if (index++ > 4) {
                   mesh.isVisible = false
                } else {
+                  meshesForShadows.push(mesh)
                   mesh.parent = this.mesh
                   mesh.material = material
                }
             }
 
             this.reset()
+            this.game.lighting.ready(meshesForShadows)
          }
       )
 
@@ -136,10 +142,13 @@ export default class Player extends GameObject {
                const across = Vector3.Cross(normal, Vector3.Down())
                const downhillVector = Vector3.Cross(across, normal)
                this.trackAngle = Math.atan2(downhillVector.x, downhillVector.z)
+               this.downhillAngle = Math.atan2(
+                  downhillVector.length(),
+                  downhillVector.y
+               )
 
                // pin y to floor
                position.y = result.pickedPoint!.y + this.offsetFromGround
-
                if (this.mode === PlayerMode.Downhill) {
                   position.x +=
                      (Math.sin(this.forceAngle) * this.speed * deltaTime) / 100
@@ -198,16 +207,14 @@ export default class Player extends GameObject {
                   (this.mode === PlayerMode.Downhill
                      ? 600
                      : exitAngleAnimationSpeed)
-
-               // clamp is missing in JS!?
-               angleDelta = Math.min(
-                  this.maxTurnSpeed,
-                  Math.max(-this.maxTurnSpeed, angleDelta)
-               )
-
                this.forceAngle += angleDelta * deltaTime
+               //head downhill
+               const angleDeltaVerticalToTarget =
+                  this.downhillAngle - this.mesh.rotation.x
+               let angleVerticalDelta = angleDeltaVerticalToTarget / 500
 
                this.mesh.rotation.y = this.forceAngle - Math.PI
+               this.mesh.rotation.x = -(angleVerticalDelta * deltaTime)
             } else {
                // no ground beneath us so ragdoll
                this.mode = PlayerMode.Ragdoll

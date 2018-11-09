@@ -59,6 +59,7 @@ export default class TrackBuilder {
       })
 
       trackMesh.material = this.createMaterial()
+      trackMesh.receiveShadows = true
       this.track.mesh = trackMesh
       return this.track
    }
