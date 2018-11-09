@@ -205,15 +205,11 @@ export default class TrackBuilder {
                this.cursor.translate(Vector3.Forward(), 1, Space.LOCAL)
                const afterPos = this.cursor.position.clone()
                this.cursor.translate(Vector3.Forward(), -1, Space.LOCAL)
-
                const exitAngle = Math.atan2(
                   afterPos.x - prePos.x,
                   afterPos.z - prePos.z
                )
-
                newPost.exitAngle = exitAngle
-
-               console.log('post exit angle ', exitAngle)
             }
          }
       }
