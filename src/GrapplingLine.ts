@@ -46,7 +46,7 @@ export default class GrapplingLine extends GameObject {
    }
 
    startCornering(position: Vector3, angle: number, radius: number) {
-      this.mesh.isVisible = true
+      this.mesh.isVisible = false ///true
       this.mesh.position = position
       this.mesh.rotation.y = Math.PI + angle
       this.mesh.scaling.y = 0
