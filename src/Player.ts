@@ -32,7 +32,7 @@ export default class Player extends GameObject {
    wasTouchingGroundLastFrame = false
    cameraTarget = new Mesh('cameraTarget')
    cameraTargetOffset = new Vector3(0, 0, 0)
-   startForceAngle = 0.15
+   startForceAngle = 0.1
    forceAngle = 0
    targetForceAngle = 0
    targetRotationY = 0
@@ -53,6 +53,7 @@ export default class Player extends GameObject {
    maxTurnSpeed = 0.004
    grappleOffset = Vector3.Forward()
    downhillAngle = 0
+   overCorrect = 0.15
 
    reset() {
       this.speed = this.startSpeed
@@ -120,6 +121,7 @@ export default class Player extends GameObject {
       playerDebugGui.add(this, 'ragdollSpinSpeed', 0.01, 0.1)
       playerDebugGui.add(this, 'ragdollFallSpeed', 0.001, 0.1)
       playerDebugGui.add(this, 'ragdollShrinkRate', 0.001, 0.01)
+      playerDebugGui.add(this, 'overCorrect', 0, 0.5)
    }
 
    update() {
@@ -182,7 +184,7 @@ export default class Player extends GameObject {
                   this.targetForceAngle =
                      exitAngle +
                      // add in a little over-correction
-                     directionMultiplier * 0.25
+                     directionMultiplier * this.overCorrect
 
                   if (rotations <= 1 / 3) {
                      exitAngleAnimationSpeed = 350
@@ -208,12 +210,13 @@ export default class Player extends GameObject {
                      : exitAngleAnimationSpeed)
                this.forceAngle += angleDelta * deltaTime
                //head downhill
-               const angleDeltaVerticalToTarget =
-                  this.downhillAngle - this.mesh.rotation.x
-               let angleVerticalDelta = angleDeltaVerticalToTarget / 500
+               //    const angleDeltaVerticalToTarget =
+               //       this.downhillAngle - this.mesh.rotation.x
+               //    let angleVerticalDelta = angleDeltaVerticalToTarget / 500
 
                this.mesh.rotation.y = this.forceAngle - Math.PI
-               this.mesh.rotation.x = -(angleVerticalDelta * deltaTime)
+
+               this.mesh.rotation.x = -this.downhillAngle + Math.PI / 2
             } else {
                // no ground beneath us so ragdoll
                this.mode = PlayerMode.Ragdoll
