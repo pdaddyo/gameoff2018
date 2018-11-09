@@ -53,7 +53,7 @@ export default class Player extends GameObject {
    maxTurnSpeed = 0.004
    grappleOffset = Vector3.Forward()
    downhillAngle = 0
-   overCorrect = 0.15
+   overCorrect = 0.18
 
    reset() {
       this.speed = this.startSpeed
